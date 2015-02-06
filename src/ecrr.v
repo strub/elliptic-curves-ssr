@@ -667,7 +667,7 @@ Section L_2_40_base.
      * - P/Q are on the curve *)
     have ordhE: forall R, order h R = (R == P)%:Z - (R == Q)%:Z.
       move=> R; rewrite -ecdiv_coeffE divhE coeffB !coeffU.
-      by rewrite !mul1r ![_ == R]eq_sym.
+      by rewrite !mul1r ![_ == R]eq_sym !natz.
     have ordhP: order h P = 1.
       by move: (ordhE P); rewrite (negbTE ne_PQ) eqxx subr0.
     have ordhQ: order h Q = -1.
@@ -752,7 +752,7 @@ Section L_2_40_base.
           + apply/eqP=> eq_SQ; move: ordfQ; rewrite -eq_SQ => ordfS.
             by move: S_in_domf; rewrite mem_dom inE ecdiv_coeffE ordfS.
         rewrite (eq_bigr (fun S => (<<order f S *g S>> - (<<Q>> *~ order f S)))); last first.
-          by move=> S _; rewrite mulrzBl freegU_mulz.
+          by move=> S _; rewrite mulrzBl freegU_mulz intz.
         rewrite -big_seq sumrB -mulrz_sumr -ecdiv_degE.
         by rewrite deg_ecdiv_eq0 // subr0 -ecdiv_sumE.
       case/eq_ecdiv_proportional_func=> // c nz_c; exists ((c%:P%:F) * F).

@@ -360,7 +360,7 @@ Section LinearReduction.
     ecnorm (<< lr D >> - << ∞ >>) <= 1.
   Proof.
     move=> degD_eq0; move: (ecnorm_lr_le1 D).
-    by rewrite degD_eq0 sub0r -[<< _ *g ∞ >>]freegU_mulz mulrN1z.
+    by rewrite degD_eq0 sub0r -freegUN.
   Qed.
 
   Lemma ecdeqv_lr_deg0 (D : {freeg (point K)}):
@@ -368,8 +368,7 @@ Section LinearReduction.
       D :~: (<< lr D >> - << ∞ >>).
   Proof.
     move=> degD_eq0 oncveD; rewrite {1}(ecdeqv_lr oncveD).
-    rewrite degD_eq0 sub0r  -[<< _ *g ∞ >>]freegU_mulz mulrN1z.
-    reflexivity.
+    by rewrite degD_eq0 sub0r -freegUN; reflexivity.
   Qed.
 
   Lemma ecdeqv_lr_deg0_uniq (D : {freeg point K}) (p : point K):
@@ -431,7 +430,8 @@ Section LinearReduction.
     + by apply/allP=> p; rewrite domN => pD; move/allP/(_ p pD): oncveD2.
   Qed.
 
-  Lemma oncurve_lrpi p: oncurve p -> all oncurve (dom (<<p>> - <<∞>>)).
+  Lemma oncurve_lrpi p:
+    oncurve p -> all oncurve (dom (<<p>> - <<∞>> : {freeg point _})).
   Proof.
     case: (p =P ∞) => [->|/eqP]; first by rewrite subrr dom0.
     move=> nz_p oncve; apply/allP=> q /domD_subset; rewrite mem_cat.

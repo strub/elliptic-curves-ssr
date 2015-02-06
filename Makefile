@@ -12,7 +12,6 @@ COQFILES := \
 	common/xmatrix.v \
 	common/xseq.v \
 	src/viete.v \
-	src/freeg.v \
 	src/ec.v \
 	src/ecpoly.v \
 	src/ecpolyfrac.v \

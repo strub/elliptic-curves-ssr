@@ -6,7 +6,7 @@
 
 (* -------------------------------------------------------------------- *)
 Require Import ssreflect ssrnat ssrbool eqtype xseq fintype choice.
-Require Import ssrfun bigop poly ssralg finalg fingroup freeg.
+Require Import ssrfun bigop poly ssralg ssrint finalg fingroup freeg.
 Require Import mxpoly countalg.
 Require Import ec ecpoly eceval ecorder ecdiv ecrr ecdivlr.
 
@@ -45,7 +45,7 @@ Section ECGroup.
     move=> [p oncve_p] [q oncve_q] [r oncve_r] /=.
     apply/eqP; rewrite !eqE /=; apply/eqP.
     rewrite -[p](lrpi _ oncve_p) // -[q](lrpi _ oncve_q) // -[r](lrpi _ oncve_r) //.
-    have oncveD D1 D2:
+    have oncveD (D1 D2 : {freeg (point K)}):
       all oncurve (dom D1) -> all oncurve (dom D2) -> all oncurve (dom (D1 + D2)).
       move=> oncveD1 oncveD2; apply/allP=> s /domD_subset.
       rewrite mem_cat => /orP [];

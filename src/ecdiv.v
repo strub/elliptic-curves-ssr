@@ -69,7 +69,7 @@ Section ECDiv.
     rewrite /ecdivp; unlock; rewrite raddfD raddf_sum /= coeffU.
     pose F q := (order f%:F (|q.1, q.2|)) * ((|q.1, q.2|) == p).
     rewrite (eq_bigr F); last first.
-      by move=> q _; rewrite coeffU {}/F.
+      by move=> q _; rewrite coeffU {}/F natz.
     rewrite {}/F; case: p => [|x y].
       by rewrite big1 => [|i _] /=; rewrite !Monoid.simpm.
     rewrite !Monoid.simpm; case: (order f%:F (|x, y|) =P 0).
@@ -134,7 +134,7 @@ Section ECDiv.
       by rewrite orderF_line.
     move=> oncve; rewrite !eqE /= eqxx /=.
     case oncve_p: (oncurve (|p1, p2|)); last first.
-      rewrite order_outcve ?oncve_p // -PoszD; apply/eqP.
+      rewrite order_outcve ?oncve_p // !natz; apply/eqP.
       rewrite eqz_nat eq_sym addn_eq0 eqr_oppLR !eqb0 -negb_or.
       rewrite -eqr_sqr (eqP oncve) eq_sym; move: oncve_p.
       by move=> /= ->.
@@ -390,7 +390,7 @@ Section ECDiv.
 
     Lemma div_ind_dom D: P D.
     Proof.
-      apply: (@freeg_ind_dom _ (pred1 (∞ : point K))) => {D}; last first.
+      apply: (@freeg_ind_dom _ _ (pred1 (∞ : point K))) => {D}; last first.
         by move=> k p D /= p_notin_D nz_k nz_p PD; apply: HS.
       move=> D domD; rewrite {1}[D]div_sumE -big_filter.
       set s := [seq _ <- _ | _]; have ->: s = [::]; last first.
@@ -656,13 +656,13 @@ Section ECDiv.
       by have := p_in_D; rewrite -gtz0_ge1 normrE mem_dom inE.
     rewrite cpD -{2}[1]addr0 => /addrI=> sum_ps_eq0; exists p=> //.
     exists (coeff p D < 0); exists (coeff ∞ D); rewrite addrC.
-    congr (_ + _); rewrite -freegU_mulz -[X in _ = X]addr0.
+    congr (_ + _); rewrite freegU_mulz -[X in _ = X]addr0.
     congr (_ + _); last first.
       rewrite big_seq big1 // => i i_in_ps; apply/eqP.
       rewrite freegU_eq0; move/eqP: sum_ps_eq0.
       rewrite psumr_eq0; last by move=> ? _; rewrite normrE.
       by move/allP/(_ i i_in_ps)/implyP; rewrite normr_eq0; apply.
-    by rewrite -{1}[coeff p D]mulr_sign_norm cpD mulr1.
+    by rewrite -{1}[coeff p D]mulr_sign_norm cpD mulr1 intz.
   Qed.
 
   Lemma norm_eq1P_deg (D : {freeg (point K)}):
