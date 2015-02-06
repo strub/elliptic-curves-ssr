@@ -7,7 +7,7 @@
 (* -------------------------------------------------------------------- *)
 Require Import ssreflect ssrnat ssrbool eqtype fintype tuple.
 Require Import seq fintype bigop ssralg finalg ssrfun choice.
-Require Import zmodp fingroup polyall polydec viete ssrring.
+Require Import zmodp fingroup polyall polydec ssrring mpoly.
 
 Import GRing.Theory.
 
@@ -842,7 +842,7 @@ Module ECGroup.
         by move: monic_r; rewrite Er' !(monicMr, monicXsubC) //.
       move/eqP=> Eqr {nz_qr}; move: Er'; rewrite {}Eqr => Er'.
       have/(congr1 (fun (x : {poly K})=> x`_2)) := Er'.
-      set cs := [tuple k; p.1; q.1]; move/esym/eqP: (viete0 cs).
+      set cs := [tuple k; p.1; q.1]; move/esym/eqP: (mroots_sum cs).
       rewrite 3!big_cons big_nil mulr1 eqr_oppLR => /eqP->.
       rewrite {1}Er (@PolyK _ 0) ?oner_neq0 // unlock /= !simp /=.
       move=> Ec2; have: k = - (c2 + p.1 + q.1) by rewrite Ec2; ssring.
