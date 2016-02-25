@@ -5,8 +5,11 @@
  * -------------------------------------------------------------------- *)
 
 (* -------------------------------------------------------------------- *)
+From mathcomp
 Require Import ssreflect ssrbool eqtype ssrnat ssrfun bigop.
+From mathcomp
 Require Import seq fintype tuple choice perm ssralg zmodp.
+From mathcomp
 Require Export matrix mxalgebra.
 
 (* -------------------------------------------------------------------- *)

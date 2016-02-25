@@ -5,9 +5,13 @@
  * -------------------------------------------------------------------- *)
 
 (* -------------------------------------------------------------------- *)
+From mathcomp
 Require Import ssreflect ssrnat ssrbool eqtype ssralg ssrfun.
+From mathcomp
 Require Import choice seq bigop prime div.
-Require Export poly polydiv polyorder.
+From mathcomp
+Require Export poly polydiv.
+Require Export polyorder.
 
 Import GRing.Theory.
 
