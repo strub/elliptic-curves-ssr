@@ -5,9 +5,13 @@
  * -------------------------------------------------------------------- *)
 
 (* -------------------------------------------------------------------- *)
+From mathcomp
 Require Import ssreflect ssrnat ssrbool eqtype fintype tuple.
+From mathcomp
 Require Import seq fintype bigop ssralg finalg ssrfun choice.
-Require Import zmodp fingroup polyall polydec ssrring mpoly.
+From mathcomp
+Require Import zmodp fingroup.
+Require Import polyall polydec ssrring SsrMultinomials.mpoly.
 
 Import GRing.Theory.
 

@@ -5,11 +5,15 @@
  * -------------------------------------------------------------------- *)
 
 (* -------------------------------------------------------------------- *)
-Require Import ssreflect ssrnat ssrbool eqtype xseq fintype choice.
-Require Import tuple perm zmodp ssrfun bigop ssralg ssrint xmatrix.
-Require Import ssrnum poly polydiv polyall polydec polyfrac freeg.
+From mathcomp
+Require Import ssreflect ssrnat ssrbool eqtype fintype choice tuple.
+From mathcomp
+Require Import perm zmodp ssrfun bigop ssralg ssrint generic_quotient.
+From mathcomp
+Require Import ssrnum poly polydiv.
+Require Import SsrMultinomials.freeg polyall polydec polyfrac.
 Require Import ec ecpoly eceval ecorder ecdiv.
-Require Import generic_quotient fraction fracfield.
+Require Import fraction fracfield xseq xmatrix.
 
 (* -------------------------------------------------------------------- *)
 Import GRing.Theory.

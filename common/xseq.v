@@ -5,7 +5,9 @@
  * -------------------------------------------------------------------- *)
 
 (* -------------------------------------------------------------------- *)
+From mathcomp
 Require Import ssreflect ssrnat ssrbool eqtype ssrfun fintype bigop.
+From mathcomp
 Require Export seq.
 
 Set Implicit Arguments.
