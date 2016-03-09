@@ -11,9 +11,6 @@ Makefile.common
 common/*.v
 src/*.v
 
-# Ssreflect
-ssreflect/Makefile
-
 # Build scripts
 scripts/install-sh
 scripts/distribution.py
