@@ -5,8 +5,9 @@
  * -------------------------------------------------------------------- *)
 
 (* -------------------------------------------------------------------- *)
-Require Import ssreflect ssrnat ssrbool eqtype ssralg ssrfun.
-Require Import choice tuple fintype xseq bigop polyall.
+From mathcomp Require Import ssreflect ssrnat ssrbool eqtype ssralg.
+From mathcomp Require Import ssrfun choice tuple fintype bigop.
+(* ------- *) Require Import xseq polyall.
 
 Import GRing.Theory.
 

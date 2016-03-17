@@ -5,8 +5,9 @@
  * -------------------------------------------------------------------- *)
 
 (* -------------------------------------------------------------------- *)
-Require Import ssreflect eqtype ssrbool ssrnat ssrfun ssralg.
-Require Import choice bigop generic_quotient fraction.
+From mathcomp Require Import ssreflect eqtype ssrbool ssrnat ssrfun.
+From mathcomp Require Import ssralg choice bigop generic_quotient.
+(* ------- *) Require Import fraction.
 
 (* -------------------------------------------------------------------- *)
 Open Local Scope ring_scope.

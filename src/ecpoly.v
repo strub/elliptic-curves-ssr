@@ -5,9 +5,11 @@
  * -------------------------------------------------------------------- *)
 
 (* -------------------------------------------------------------------- *)
-Require Import ssreflect ssrnat ssrbool eqtype.
-Require Import fintype ssralg ssrfun choice xseq bigop ssrint.
-Require Import generic_quotient fraction fracfield polyall polydec ec.
+From mathcomp Require Import ssreflect ssrnat ssrbool eqtype fintype.
+From mathcomp Require Import ssralg ssrfun choice seq bigop ssrint.
+From mathcomp Require Import generic_quotient.
+
+Require Import xseq fraction fracfield polyall polydec ec.
 Require Import ssrring.
 
 Import GRing.Theory.

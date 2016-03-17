@@ -5,9 +5,11 @@
  * -------------------------------------------------------------------- *)
 
 (* -------------------------------------------------------------------- *)
-Require Import ssreflect ssrnat ssrbool eqtype xseq fintype choice.
-Require Import ssrfun bigop poly ssralg ssrint finalg fingroup freeg.
-Require Import mxpoly countalg.
+From mathcomp Require Import ssreflect ssrnat ssrbool eqtype seq.
+From mathcomp Require Import fintype choice ssrfun bigop poly ssralg.
+From mathcomp Require Import ssrint finalg fingroup mxpoly countalg.
+
+Require Import SsrMultinomials.freeg.
 Require Import ec ecpoly eceval ecorder ecdiv ecrr ecdivlr.
 
 (* -------------------------------------------------------------------- *)

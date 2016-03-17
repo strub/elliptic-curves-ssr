@@ -5,9 +5,9 @@
  * -------------------------------------------------------------------- *)
 
 (* -------------------------------------------------------------------- *)
-Require Import ssreflect ssrbool eqtype ssrnat ssrfun bigop.
-Require Import seq fintype tuple choice perm ssralg zmodp.
-Require Export matrix mxalgebra.
+From mathcomp Require Import ssreflect ssrbool eqtype ssrnat ssrfun bigop.
+From mathcomp Require Import seq fintype tuple choice perm ssralg zmodp.
+From mathcomp Require Export matrix mxalgebra.
 
 (* -------------------------------------------------------------------- *)
 Import GRing.Theory.

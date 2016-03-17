@@ -5,12 +5,12 @@
  * -------------------------------------------------------------------- *)
 
 (* -------------------------------------------------------------------- *)
-Require Import ssreflect ssrnat ssrbool eqtype xseq.
-Require Import fintype choice bigop ssralg ssrfun ssrint ssrnum.
-Require Import generic_quotient fracfield polyall.
-Require Import polyall polyfrac polydec.
-Require Import ec ecpoly eceval ecorder freeg.
-Require Import generic_quotient fraction.
+From mathcomp Require Import ssreflect ssrnat ssrbool eqtype seq.
+From mathcomp Require Import fintype choice bigop ssralg ssrfun ssrint.
+From mathcomp Require Import ssrnum generic_quotient.
+
+Require Import fracfield fraction polyall polyfrac polydec.
+Require Import ec ecpoly eceval ecorder SsrMultinomials.freeg.
 
 Import GRing.Theory.
 Import Num.Theory.
