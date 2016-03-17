@@ -6,5 +6,6 @@
 *.annot
 *.vo
 *.glob
+*.aux
 
 Makefile.coq
