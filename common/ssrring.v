@@ -424,7 +424,7 @@ Ltac ssring :=
   let xt := fresh "xt" in
   let xe := fresh "xe" in
     apply/eqP; rewrite -subr_eq0; apply/eqP;
-      rewrite ?(mulr0, mul0r, mulr1, mul1r); reify xt xe;
+      rewrite ?(mulr0, mul0r, mulr1, mul1r, mulr_natr); reify xt xe;
       move: (@Rcorrect _ 100 xe [::] xt (PEc 0) I (erefl true));
       by rewrite !PEReval.
 
@@ -433,7 +433,7 @@ Ltac ssfield :=
   let xt := fresh "xt" in
   let xe := fresh "xe" in
     apply/eqP; rewrite -subr_eq0; apply/eqP;
-      rewrite ?(mulr0, mul0r, mulr1, mul1r); freify xt xe;
+      rewrite ?(mulr0, mul0r, mulr1, mul1r, mulr_natr); freify xt xe;
       move: (@Fcorrect _ 100 xe [::] xt (Field_theory.FEc 0) I [::] (erefl [::]));
       move/(_ _ (erefl _) _ (erefl _) (erefl true)); rewrite !PEFeval;
       apply=> /=; do? split; cbv delta[BinPos.Pos.to_nat] => /= {xt xe};
