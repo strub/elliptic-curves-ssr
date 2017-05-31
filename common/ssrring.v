@@ -425,7 +425,7 @@ Ltac ssring :=
   let xe := fresh "xe" in
     apply/eqP; rewrite -subr_eq0; apply/eqP;
       rewrite ?(mulr0, mul0r, mulr1, mul1r); reify xt xe;
-      move: (@Rcorrect _ 100 xe [::] xt (PEc 0) I (erefl true));
+      move: (@Rcorrect _ 100 xe [::] xt (Ring_polynom.PEc 0) I (erefl true));
       by rewrite !PEReval.
 
 (* -------------------------------------------------------------------- *)
