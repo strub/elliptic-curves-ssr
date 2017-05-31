@@ -425,7 +425,7 @@ Ltac ssring :=
   let xe := fresh "xe" in
     apply/eqP; rewrite -subr_eq0; apply/eqP;
       rewrite ?(mulr0, mul0r, mulr1, mul1r); reify xt xe;
-      move: (@Rcorrect _ 100 xe [::] xt (PEc 0) I (erefl true));
+      move: (@Rcorrect _ 100 xe nil xt (Ring_polynom.PEc 0) I (erefl true));
       by rewrite !PEReval.
 
 (* -------------------------------------------------------------------- *)
@@ -434,7 +434,7 @@ Ltac ssfield :=
   let xe := fresh "xe" in
     apply/eqP; rewrite -subr_eq0; apply/eqP;
       rewrite ?(mulr0, mul0r, mulr1, mul1r); freify xt xe;
-      move: (@Fcorrect _ 100 xe [::] xt (Field_theory.FEc 0) I [::] (erefl [::]));
+      move: (@Fcorrect _ 100 xe nil xt (Field_theory.FEc 0) I nil (erefl nil));
       move/(_ _ (erefl _) _ (erefl _) (erefl true)); rewrite !PEFeval;
       apply=> /=; do? split; cbv delta[BinPos.Pos.to_nat] => /= {xt xe};
       try (exact I || apply/eqP).
