@@ -105,10 +105,7 @@ Qed.
 Lemma muP p x n : p != 0 ->
   (('X - x%:P)^+n %| p) && ~~(('X - x%:P)^+n.+1 %| p) = (n == \mu_x p).
 Proof.
-move=> hp0; rewrite !root_le_mu//; case: (ltngtP n (\mu_x p))=> hn.
-+ by rewrite ltnW//=.
-+ by rewrite leqNgt hn.
-+ by rewrite hn leqnn.
+move=> hp0; rewrite !root_le_mu//; case: (ltngtP n (\mu_x p))=> hn ; solve[auto] ; by [rewrite ltnW//= | rewrite leqNgt hn | rewrite hn leqnn].
 Qed.
 
 Lemma mu_gt0 p x : p != 0 -> (0 < \mu_x p)%N = root p x.
