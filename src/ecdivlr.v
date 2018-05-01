@@ -22,7 +22,7 @@ Import Num.Theory.
 Import fraction.FracField.
 Import fracfield.FracField.
 
-Open Local Scope ring_scope.
+Local Open Scope ring_scope.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

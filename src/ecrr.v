@@ -21,7 +21,7 @@ Import fraction.FracField.
 Import fracfield.FracField.
 Import FracInterp.
 
-Open Local Scope ring_scope.
+Local Open Scope ring_scope.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
