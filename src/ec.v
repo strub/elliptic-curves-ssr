@@ -13,7 +13,7 @@ Require Import SsrMultinomials.mpoly polyall polydec ssrring.
 
 Import GRing.Theory.
 
-Open Local Scope ring_scope.
+Local Open Scope ring_scope.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

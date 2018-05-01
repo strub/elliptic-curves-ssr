@@ -10,8 +10,8 @@ From mathcomp Require Import ssralg choice bigop generic_quotient.
 (* ------- *) Require Import fraction.
 
 (* -------------------------------------------------------------------- *)
-Open Local Scope ring_scope.
-Open Local Scope quotient_scope.
+Local Open Scope ring_scope.
+Local Open Scope quotient_scope.
 
 Import GRing.
 Import FracField.

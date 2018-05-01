@@ -22,7 +22,7 @@ Import FracInterp.
 Import PreClosedField.
 
 (* -------------------------------------------------------------------- *)
-Open Local Scope ring_scope.
+Local Open Scope ring_scope.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

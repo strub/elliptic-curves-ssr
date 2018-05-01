@@ -16,8 +16,8 @@ Import GRing.Theory.
 Import Num.Theory.
 Import FracField.
 
-Open Local Scope ring_scope.
-Open Local Scope quotient_scope.
+Local Open Scope ring_scope.
+Local Open Scope quotient_scope.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
