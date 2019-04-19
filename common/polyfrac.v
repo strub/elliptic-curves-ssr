@@ -39,7 +39,7 @@ Section Defs.
   (*~option G / use newType instead ? *)
   Inductive gproj (G : Type) : Type := GP_Finite of G | GP_Inf.
 
-  Implicit Arguments GP_Inf [G].
+  Arguments GP_Inf [G].
 
   Implicit Types p : gproj G.
 
