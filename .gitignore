@@ -9,3 +9,4 @@
 *.aux
 
 Makefile.coq
+Makefile.coq.conf
