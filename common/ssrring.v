@@ -60,55 +60,55 @@ Local Coercion Z.pos         : positive >-> Z.
 (* -------------------------------------------------------------------- *)
 Class find (T : Type) (x : T) (xs : seq T) (i:nat).
 
-Instance find0 (T : Type) (x : T) (xs : seq T)
+Program Instance find0 (T : Type) (x : T) (xs : seq T)
  : find x (x :: xs) 0.
 
-Instance findS (T : Type) (x : T) (y : T) (ys :  seq T) i
+Program Instance findS (T : Type) (x : T) (y : T) (ys :  seq T) i
  {_: find x ys i}
  : find x (y :: ys) i.+1 | 1.
 
 (* -------------------------------------------------------------------- *)
 Class closed (T : Type) (xs : seq T).
 
-Instance closed_nil T
+Program Instance closed_nil T
  : closed (T:=T) nil.
 
-Instance closed_cons T (x : T) (xs : seq T)
+Program Instance closed_cons T (x : T) (xs : seq T)
  {_: closed xs}
  : closed (x :: xs).
 
 (* -------------------------------------------------------------------- *)
 Class reify (R : idomainType) (a : R) (t : PExpr Z) (e : seq R).
 
-Instance reify_zero (R : idomainType) e : @reify R 0 0%S e.
-Instance reify_one  (R : idomainType) e : @reify R 1 1%S e.
+Program Instance reify_zero (R : idomainType) e : @reify R 0 0%S e.
+Program Instance reify_one  (R : idomainType) e : @reify R 1 1%S e.
 
-Instance reify_natconst (R : idomainType) n e
+Program Instance reify_natconst (R : idomainType) n e
   : @reify R n%:R ((n : Z)%:S)%S e.
 
-Instance reify_add (R : idomainType) a1 a2 t1 t2 e
+Program Instance reify_add (R : idomainType) a1 a2 t1 t2 e
   {_: @reify R a1 t1 e}
   {_: @reify R a2 t2 e}
   : reify (a1 + a2) (t1 + t2)%S e.
 
-Instance reify_opp (R : idomainType) a t e
+Program Instance reify_opp (R : idomainType) a t e
   {_: @reify R a t e}
   : reify (-a) (-t)%S e.
 
-Instance reify_natmul (R : idomainType) a n t e
+Program Instance reify_natmul (R : idomainType) a n t e
   {_: @reify R a t e}
   : reify (a *+ n) (t * (n : Z)%:S)%S e.
 
-Instance reify_mul (R : idomainType) a1 a2 t1 t2 e
+Program Instance reify_mul (R : idomainType) a1 a2 t1 t2 e
   {_: @reify R a1 t1 e}
   {_: @reify R a2 t2 e}
   : reify (a1 * a2) (t1 * t2)%S e.
 
-Instance reify_exp (R : idomainType) a n t e
+Program Instance reify_exp (R : idomainType) a n t e
   {_: @reify R a t e}
   : reify (a ^+ n) (t ^+ n)%S e | 1.
 
-Instance reify_var (R : idomainType) a i e
+Program Instance reify_var (R : idomainType) a i e
   `{find R a e i}
   : reify a ('X_i)%S e
   | 100.
@@ -130,39 +130,39 @@ Ltac reify xt xe :=
 (* -------------------------------------------------------------------- *)
 Class freify (F : fieldType) (a : F) (t : FExpr Z) (e : seq F).
 
-Instance freify_zero (F : fieldType) e : @freify F 0 0%F e.
-Instance freify_one  (F : fieldType) e : @freify F 1 1%F e.
+Program Instance freify_zero (F : fieldType) e : @freify F 0 0%F e.
+Program Instance freify_one  (F : fieldType) e : @freify F 1 1%F e.
 
-Instance freify_natconst (F : fieldType) n e
+Program Instance freify_natconst (F : fieldType) n e
   : @freify F n%:R ((n : Z)%:S)%F e.
 
-Instance freify_add (F : fieldType) a1 a2 t1 t2 e
+Program Instance freify_add (F : fieldType) a1 a2 t1 t2 e
   {_: @freify F a1 t1 e}
   {_: @freify F a2 t2 e}
   : freify (a1 + a2) (t1 + t2)%F e.
 
-Instance freify_opp (F : fieldType) a t e
+Program Instance freify_opp (F : fieldType) a t e
   {_: @freify F a t e}
   : freify (-a) (-t)%F e.
 
-Instance freify_natmul (F : fieldType) a n t e
+Program Instance freify_natmul (F : fieldType) a n t e
   {_: @freify F a t e}
   : freify (a *+ n) (t * (n : Z)%:S)%F e.
 
-Instance freify_mul (F : fieldType) a1 a2 t1 t2 e
+Program Instance freify_mul (F : fieldType) a1 a2 t1 t2 e
   {_: @freify F a1 t1 e}
   {_: @freify F a2 t2 e}
   : freify (a1 * a2) (t1 * t2)%F e.
 
-Instance freify_inv (F : fieldType) a t e
+Program Instance freify_inv (F : fieldType) a t e
   {_: @freify F a t e}
   : freify (a^-1) (t^-1)%F e.
 
-Instance freify_exp (F : fieldType) a n t e
+Program Instance freify_exp (F : fieldType) a n t e
   {_: @freify F a t e}
   : freify (a ^+ n) (t ^+ n)%F e | 1.
 
-Instance freify_var (F : fieldType) a i e
+Program Instance freify_var (F : fieldType) a i e
   `{find F a e i}
   : freify a ('X_i)%F e
   | 100.
@@ -191,14 +191,14 @@ Definition R_of_Z (R : ringType) (z : Z) : R :=
 
 Arguments R_of_Z [R].
 
-Lemma eqposP (x y : positive): reflect (x = y) (Peqb x y).
-Proof. by apply: (iffP idP); move/Peqb_eq. Qed.
+Lemma eqposP (x y : positive): reflect (x = y) (Pos.eqb x y).
+Proof. by apply: (iffP idP); move/Pos.eqb_eq. Qed.
 
 Definition pos_eqMixin := EqMixin eqposP.
 Canonical pos_eqType := Eval hnf in (EqType positive pos_eqMixin).
 
 Definition pos_pickle   (p : positive) := nat_of_P p.
-Definition pos_unpickle (n : nat) := Ppred (P_of_succ_nat n).
+Definition pos_unpickle (n : nat) := Pos.pred (P_of_succ_nat n).
 
 Lemma pos_pickleK: cancel pos_pickle pos_unpickle.
 Proof.
@@ -319,7 +319,7 @@ Qed.
 
 Lemma RZ (R : idomainType):
   ring_morph (R := R) 0 1 +%R *%R ~%R -%R eq
-    0%Z 1%Z Zplus Zmult Zminus Zopp Zeq_bool (@R_of_Z _).
+    0%Z 1%Z Zplus Zmult Zminus Z.opp Zeq_bool (@R_of_Z _).
 Proof.
   split=> //=.
   + by move=> x y; rewrite rmorphD.
