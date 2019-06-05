@@ -89,21 +89,21 @@ Section LinearReduction.
     by apply: ECGroup.addO => //; apply: IH.
   Qed.
 
-  Add Parametric Relation (E : ecuType K):
+  Add Parametric Relation :
     {freeg (point K)} (ecdeqv E)
       reflexivity  proved by (@ecdeqv_refl  _ E)
       symmetry     proved by (@ecdeqv_sym   _ E)
       transitivity proved by (@ecdeqv_trans _ E)
     as ecdeqv_rel.
 
-  Add Parametric Morphism (E : ecuType K):
+  Add Parametric Morphism:
     (@GRing.opp _) with signature
           (ecdeqv E)
       ==> (ecdeqv E)
     as ecdeqv_morph_opp.
   Proof. by move=> D1 D2 eqv; apply: ecdeqv_opp. Qed.
 
-  Add Parametric Morphism (E : ecuType K):
+  Add Parametric Morphism :
     (@GRing.add _) with signature
           (ecdeqv E)
       ==> (ecdeqv E)
