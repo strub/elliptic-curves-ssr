@@ -8,6 +8,7 @@
 From mathcomp Require Import ssreflect ssrnat ssrbool eqtype seq.
 From mathcomp Require Import fintype choice ssrfun bigop poly ssralg.
 From mathcomp Require Import ssrint finalg fingroup mxpoly countalg.
+From mathcomp Require Import closed_field.
 
 Require Import SsrMultinomials.freeg.
 Require Import ec ecpoly eceval ecorder ecdiv ecrr ecdivlr.
@@ -174,7 +175,7 @@ Section ECGroupOfFin.
     case (countable_algebraic_closure [countFieldType of K]) => L /= [i ir].
     have closedL: GRing.ClosedField.axiom L by apply/solve_monicpoly.
     pose LFT := ECULiftFieldType i.
-    pose LDM := closed_field.closed_fields_QEMixin closedL.
+    pose LDM := closed_field_QEMixin closedL.
     pose LDT := EcuDecFieldType LFT LDM.
     have h := (@addeA LDT (eclift E i) closedL) => p1 p2 p3.
     pose q1 := eclift_ec i p1; pose q2 := eclift_ec i p2; pose q3 := eclift_ec i p3.

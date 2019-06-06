@@ -1732,7 +1732,7 @@ Section ECPolyRoots.
     by rewrite -eceval_mul // conjp_normp ecX_eceval.
   Qed.
 
-  Implicit Arguments ecroot_normp [f x].
+  Arguments ecroot_normp [f x].
 
   Lemma ecroots_order f x y:
     ((x, y) \in ecroots f) = (order f%:F (|x, y|) != 0).

@@ -49,7 +49,7 @@ Module ECUFieldType.
   Section ClassDef.
     Record class_of (K : Type) := Class {
       base  : GRing.Field.class_of K;
-      mixin : mixin_of (GRing.Field.Pack base K)
+      mixin : mixin_of (GRing.Field.Pack base)
     }.
 
     Local Coercion base : class_of >-> GRing.Field.class_of.
@@ -63,19 +63,19 @@ Module ECUFieldType.
     Definition class := let: Pack _ c _ as cT' := cT return class_of cT' in c.
     Definition clone c of phant_id class c := @Pack T c T.
 
-    Definition pack b0 (m0 : mixin_of (@GRing.Field.Pack T b0 T)) :=
+    Definition pack b0 (m0 : mixin_of (@GRing.Field.Pack T b0)) :=
       fun bT b & phant_id (@GRing.Field.class bT) b =>
       fun    m & phant_id m0 m => Pack (@Class T b m) T.
 
-    Definition eqType          := Equality.Pack             class cT.
-    Definition choiceType      := Choice.Pack               class cT.
-    Definition zmodType        := GRing.Zmodule.Pack        class cT.
-    Definition ringType        := GRing.Ring.Pack           class cT.
-    Definition comRingType     := GRing.ComRing.Pack        class cT.
-    Definition unitRingType    := GRing.UnitRing.Pack       class cT.
-    Definition comUnitRingType := GRing.ComUnitRing.Pack    class cT.
-    Definition idomainType     := GRing.IntegralDomain.Pack class cT.
-    Definition fieldType       := GRing.Field.Pack          class cT.
+    Definition eqType          := Equality.Pack             class.
+    Definition choiceType      := Choice.Pack               class.
+    Definition zmodType        := GRing.Zmodule.Pack        class.
+    Definition ringType        := GRing.Ring.Pack           class.
+    Definition comRingType     := GRing.ComRing.Pack        class.
+    Definition unitRingType    := GRing.UnitRing.Pack       class.
+    Definition comUnitRingType := GRing.ComUnitRing.Pack    class.
+    Definition idomainType     := GRing.IntegralDomain.Pack class.
+    Definition fieldType       := GRing.Field.Pack          class.
   End ClassDef.
 
   Module Exports.
@@ -165,34 +165,34 @@ Module ECUFinField.
     Let xT := let: Pack T _ _ := cT in T.
     Notation xclass := (class : class_of xT).
 
-    Definition eqType := @Equality.Pack cT xclass xT.
-    Definition choiceType := @Choice.Pack cT xclass xT.
-    Definition countType := @Countable.Pack cT (fin_ xclass) xT.
-    Definition finType := @Finite.Pack cT (fin_ xclass) xT.
-    Definition zmodType := @GRing.Zmodule.Pack cT xclass xT.
-    Definition finZmodType := @FinRing.Zmodule.Pack cT xclass xT.
-    Definition ringType := @GRing.Ring.Pack cT xclass xT.
-    Definition finRingType := @FinRing.Ring.Pack cT xclass xT.
-    Definition comRingType := @GRing.ComRing.Pack cT xclass xT.
-    Definition finComRingType := @FinRing.ComRing.Pack cT xclass xT.
-    Definition unitRingType := @GRing.UnitRing.Pack cT xclass xT.
-    Definition finUnitRingType := @FinRing.UnitRing.Pack cT xclass xT.
-    Definition comUnitRingType := @GRing.ComUnitRing.Pack cT xclass xT.
-    Definition finComUnitRingType := @FinRing.ComUnitRing.Pack cT xclass xT.
-    Definition idomainType := @GRing.IntegralDomain.Pack cT xclass xT.
-    Definition finIdomainType := @FinRing.IntegralDomain.Pack cT xclass xT.
-    Definition fieldType := @GRing.Field.Pack cT xclass xT.
-    Definition finFieldType := @FinRing.Field.Pack cT xclass xT.
+    Definition eqType := @Equality.Pack cT xclass.
+    Definition choiceType := @Choice.Pack cT xclass.
+    Definition countType := @Countable.Pack cT (fin_ xclass).
+    Definition finType := @Finite.Pack cT (fin_ xclass).
+    Definition zmodType := @GRing.Zmodule.Pack cT xclass.
+    Definition finZmodType := @FinRing.Zmodule.Pack cT xclass.
+    Definition ringType := @GRing.Ring.Pack cT xclass.
+    Definition finRingType := @FinRing.Ring.Pack cT xclass.
+    Definition comRingType := @GRing.ComRing.Pack cT xclass.
+    Definition finComRingType := @FinRing.ComRing.Pack cT xclass.
+    Definition unitRingType := @GRing.UnitRing.Pack cT xclass.
+    Definition finUnitRingType := @FinRing.UnitRing.Pack cT xclass.
+    Definition comUnitRingType := @GRing.ComUnitRing.Pack cT xclass.
+    Definition finComUnitRingType := @FinRing.ComUnitRing.Pack cT xclass.
+    Definition idomainType := @GRing.IntegralDomain.Pack cT xclass.
+    Definition finIdomainType := @FinRing.IntegralDomain.Pack cT xclass.
+    Definition fieldType := @GRing.Field.Pack cT xclass.
+    Definition finFieldType := @FinRing.Field.Pack cT xclass.
     Definition ecuFieldType := @ECUFieldType.Pack cT xclass xT.
 
-    Definition join_finType := @Finite.Pack fieldType (fin_ xclass) xT.
-    Definition join_finZmodType := @FinRing.Zmodule.Pack fieldType xclass xT.
-    Definition join_finRingType := @FinRing.Ring.Pack fieldType xclass xT.
-    Definition join_finUnitRingType := @FinRing.UnitRing.Pack fieldType xclass xT.
-    Definition join_finComRingType := @FinRing.ComRing.Pack fieldType xclass xT.
-    Definition join_finComUnitRingType := @FinRing.ComUnitRing.Pack fieldType xclass xT.
-    Definition join_finIdomainType := @FinRing.IntegralDomain.Pack fieldType xclass xT.
-    Definition join_finFieldType := @FinRing.Field.Pack fieldType xclass xT.
+    Definition join_finType := @Finite.Pack fieldType (fin_ xclass).
+    Definition join_finZmodType := @FinRing.Zmodule.Pack fieldType xclass.
+    Definition join_finRingType := @FinRing.Ring.Pack fieldType xclass.
+    Definition join_finUnitRingType := @FinRing.UnitRing.Pack fieldType xclass.
+    Definition join_finComRingType := @FinRing.ComRing.Pack fieldType xclass.
+    Definition join_finComUnitRingType := @FinRing.ComUnitRing.Pack fieldType xclass.
+    Definition join_finIdomainType := @FinRing.IntegralDomain.Pack fieldType xclass.
+    Definition join_finFieldType := @FinRing.Field.Pack fieldType xclass.
 
     Definition baseFinGroupType := base_group cT zmodType finType.
     Definition finGroupType := fin_group baseFinGroupType zmodType.
@@ -275,7 +275,7 @@ Module ECUDecFieldType.
   Section ClassDef.
     Record class_of (K : Type) := Class {
       base  : ECUFieldType.class_of K;
-      mixin : GRing.DecidableField.mixin_of (GRing.UnitRing.Pack base K)
+      mixin : GRing.DecidableField.mixin_of (GRing.UnitRing.Pack base)
     }.
 
     Local Coercion base : class_of >-> ECUFieldType.class_of.
@@ -292,21 +292,21 @@ Module ECUDecFieldType.
     Definition class := let: Pack _ c _ as cT' := cT return class_of cT' in c.
     Definition clone c of phant_id class c := @Pack T c T.
 
-    Definition pack b0 (m0 : GRing.DecidableField.mixin_of (@GRing.UnitRing.Pack T b0 T)) :=
+    Definition pack b0 (m0 : GRing.DecidableField.mixin_of (@GRing.UnitRing.Pack T b0)) :=
       fun bT b  & phant_id (@ECUFieldType.class bT) b =>
       fun    m  & phant_id m0 m =>
         Pack (@Class T b m) T.
 
-    Definition eqType             := Equality.Pack             class cT.
-    Definition choiceType         := Choice.Pack               class cT.
-    Definition zmodType           := GRing.Zmodule.Pack        class cT.
-    Definition ringType           := GRing.Ring.Pack           class cT.
-    Definition comRingType        := GRing.ComRing.Pack        class cT.
-    Definition unitRingType       := GRing.UnitRing.Pack       class cT.
-    Definition comUnitRingType    := GRing.ComUnitRing.Pack    class cT.
-    Definition idomainType        := GRing.IntegralDomain.Pack class cT.
-    Definition fieldType          := GRing.Field.Pack          class cT.
-    Definition decFieldType       := GRing.DecidableField.Pack class cT.
+    Definition eqType             := Equality.Pack             class.
+    Definition choiceType         := Choice.Pack               class.
+    Definition zmodType           := GRing.Zmodule.Pack        class.
+    Definition ringType           := GRing.Ring.Pack           class.
+    Definition comRingType        := GRing.ComRing.Pack        class.
+    Definition unitRingType       := GRing.UnitRing.Pack       class.
+    Definition comUnitRingType    := GRing.ComUnitRing.Pack    class.
+    Definition idomainType        := GRing.IntegralDomain.Pack class.
+    Definition fieldType          := GRing.Field.Pack          class.
+    Definition decFieldType       := GRing.DecidableField.Pack class.
     Definition ecuFieldType       := ECUFieldType.Pack         class cT.
   End ClassDef.
 
