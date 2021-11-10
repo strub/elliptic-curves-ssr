@@ -8,7 +8,7 @@
 From mathcomp Require Import ssreflect ssrnat ssrbool eqtype seq.
 From mathcomp Require Import fintype choice fingroup tuple perm zmodp.
 From mathcomp Require Import ssrfun bigop ssralg ssrint ssrnum.
-From mathcomp Require Import generic_quotient.
+From mathcomp Require Import order generic_quotient.
 
 Require Import xseq xmatrix polyall polydec polyfrac.
 Require Import fraction fracfield SsrMultinomials.freeg.
@@ -17,6 +17,8 @@ Require Import ec ecpoly eceval ecorder ecdiv ecpolyfrac.
 (* -------------------------------------------------------------------- *)
 Import GRing.Theory.
 Import Num.Theory.
+Import Order.POrderTheory.
+Import Order.TotalTheory.
 Import fraction.FracField.
 Import fracfield.FracField.
 Import FracInterp.
@@ -191,8 +193,8 @@ Section ECRR_2_39.
         move/wlog=> /(_ i2 i1 a1); rewrite addrC; apply=> //.
           by rewrite orbC.
         set s := [:: _; _; _]; have: perm_eq [:: i1; i2; j] s.
-          by apply/perm_eqP=> /= P; ring.
-        by move/perm_eq_uniq=> <-.
+          by apply/permP=> /= P; ring.
+        by move/perm_uniq=> <-.
       move/eqP=> z_a1; move: eq; rewrite z_a1 scale0r add0r.
       have [->|/eqP nz_a2 eq] := (a2 =P 0).
         by move/eqP; rewrite scale0r expf_eq0 /= (negbTE (fact4 j)).
@@ -348,7 +350,7 @@ Section ECRR_2_39.
         move=> cij_prop; have: c (2 + i./2)%:I 0 %= c (2 + j./2)%:I 0.
           case/eqpP: cij_prop=> [[z1 z2] /= nz_z].
           rewrite -[z1]sqr_sqrt -[z2]sqr_sqrt -!exprZn.
-          case/sqr_eqr_sign=> s; rewrite -polyC_opp -polyC_exp.
+          case/sqr_eqr_sign=> s; rewrite -polyCN -polyC_exp.
           rewrite mul_polyC scalerA => eqc; apply/eqpP.
           exists (sqrt z1, (-1) ^+ s * (sqrt z2))=> //=.
           by rewrite mulf_eq0 expf_eq0 oppr_eq0 oner_eq0 !sqrt_eq0 andbF.
@@ -495,9 +497,9 @@ Section ECRR_2_38.
     rewrite !expr1n !scale1r => /esym q3E.
     have h: forall x, \mu_x (q^+3) = \mu_x (v^+2).
       by move=> x; move/(congr1 (fun r => \mu_x r)): q3E.
-    have {h} h: forall x, ~~ (odd (\mu_x q)).
+    have {}h: forall x, ~~ (odd (\mu_x q)).
       move=> x; apply/negP => odd_muqx; have: odd (3 * \mu_x q)%N.
-        by rewrite odd_mul odd_muqx.
+        by rewrite oddM odd_muqx.
       by rewrite -mulnC -mu_exp h mu_exp muln2 odd_double.
     have: q = (\prod_(c <- undup (roots q)) ('X - c%:P)^+(\mu_c q)./2)^+2.
       rewrite {1}[q]PolyClosed.roots_factor_theorem_mu_f //.
@@ -511,11 +513,11 @@ Section ECRR_2_38.
       by rewrite expf_eq0 /= monic_neq0.
     rewrite /J; wlog: u c nz_c sz_u cop_uv / (c == 1).
       move=> wlog /eqP /(congr1 ( *%R (c^-1)%:P)).
-      rewrite [X in _ = X]mulrA -polyC_mul mulVf //.
+      rewrite [X in _ = X]mulrA -polyCM mulVf //.
       rewrite -[c^-1](@sqr_sqrt clK) polyC_exp -exprMn.
       move/eqP/wlog; apply; rewrite ?oner_eq0 // mul_polyC.
         by rewrite size_scale // (@sqrt_eq0 clK) invr_eq0.
-      by rewrite coprimep_scalel // (@sqrt_eq0 clK) invr_eq0.
+      by rewrite coprimepZl // (@sqrt_eq0 clK) invr_eq0.
       move/eqP=> ->; rewrite mul1r -/J.
       move: (Xpoly_factor E closedK); case=> cs uq_cs.
     pose csn i := tnth cs i; rewrite (big_nth 0) size_tuple => eq_Xpoly {c nz_c}.
@@ -587,12 +589,9 @@ Section ECRR_2_38.
     rewrite ![[col p; q] _ _]mxE !(tnth_nth [tuple 0]) !inordK //=.
     rewrite !(tnth_nth 0) /= !mxE !(tnth_nth [tuple 0; 0]) /= !(tnth_nth 0).
     rewrite !inordK //; case: i; case=> [|[|[|[|i]]]] /=;
-      try solve [by [] | by move=> _; rewrite mul1r polyC_opp mulNr xchP].
+      try solve [by [] | by move=> _; rewrite mul1r polyCN mulNr xchP].
     by move=> _; rewrite mul0r add0r mul1r qE.
   Qed.
-
-  Require Import fraction.
-  Import FracInterp.
 
   Lemma L_2_38_fec (r s : {fraction {poly K}}):
        ~~ (isfcnt r)
@@ -646,7 +645,7 @@ Section L_2_40_base.
 
   Local Notation neq0 := (mulf_neq0, invr_eq0, ecX_eq0, tofrac_eq0, conjp_eq0).
 
-  Local Hint Extern 0 (is_true (ec.Xpoly _ != 0)) => exact: XpolyN0.
+  Local Hint Extern 0 (is_true (ec.Xpoly _ != 0)) => exact: XpolyN0 : core.
 
   Notation "f \Fo g"  := (comp_frac_fec f g).
   Notation "f \PFo g" := (comp_poly_fec g f).
@@ -701,7 +700,7 @@ Section L_2_40_base.
     have ecdivhRE R: oncurve R -> R != Q -> ecdiv (hR R) = << R >> - << Q >>.
       have hRdmp: ecdiv (hR R) = fgpos (ecdiv (hR R)) - fgneg (ecdiv h).
         rewrite -(Necdiv_transE _ (- (evalK R h))) /PEF /=.
-        by rewrite polyC_opp ecXN tofracN -fg_decomp.
+        by rewrite polyCN ecXN tofracN -fg_decomp.
       move=> oncveR ne_RQ; rewrite hRdmp; have NhE: fgneg (ecdiv h) = <<Q>>.
         apply/eqP/freeg_eqP => S; rewrite coeff_fgnegE.
         rewrite divhE coeffB !coeffU !mul1r; do! case: eqP => //=.
@@ -716,17 +715,17 @@ Section L_2_40_base.
       move/eqP: ehR; rewrite -eval_gt0_order // => gt0_ordhR.
       rewrite (bigD1_seq R) ?uniq_dom //=; last by rewrite mem_posdiv.
       rewrite degD [X in _ + X]raddf_sum /= degU coeff_fgposE ecdiv_coeffE.
-      move: gt0_ordhR; rewrite gtz0_ge1 ler_eqVlt; case/orP; last first.
-        move=> lt1_ordhR; rewrite maxr_r //; last first.
-          by apply: (@ler_trans _ 1) => //; rewrite ltrW.
+      move: gt0_ordhR; rewrite gtz0_ge1 le_eqVlt; case/orP; last first.
+        move=> lt1_ordhR; rewrite max_r //; last first.
+          by apply: (@le_trans _ _ 1) => //; rewrite ltW.
         move/(congr1 (+%R (-1))); rewrite [X in _ = X]addrC subrr.
         move/eqP; rewrite addrA [-1+_]addrC paddr_eq0; first last.
-        + by apply: sumr_ge0=> S _; rewrite degU coeff_fgposE ler_maxr.
-        + by rewrite subr_ge0 ltrW.
+        + by apply: sumr_ge0=> S _; rewrite degU coeff_fgposE le_maxr.
+        + by rewrite subr_ge0 ltW.
         case/andP; rewrite subr_eq0 => /eqP ordhR _.
-        by rewrite ordhR ltrr in lt1_ordhR.
-      move/eqP=> <-; rewrite maxr_r // -{2}[1]addr0 => /addrI /eqP.
-      rewrite psumr_eq0 => [|S _]; last by rewrite degU coeff_fgposE ler_maxr.
+        by rewrite ordhR ltxx in lt1_ordhR.
+      move/eqP=> <-; rewrite max_r // -{2}[1]addr0 => /addrI /eqP.
+      rewrite psumr_eq0 => [|S _]; last by rewrite degU coeff_fgposE le_maxr.
       move=> all0; set S := \sum_(_ <- _ | _) _; have ->: S = 0; first last.
         by rewrite addr0.
       apply/eqP; rewrite {}/S big_seq_cond big1 // => S /andP [S_indom ne_SR].
@@ -763,7 +762,7 @@ Section L_2_40_base.
 
     (* Any rational function can be expressed as a rational fraction in h
      * (Generalization of previous property) *)
-    have {H} H f: exists r, f = r \Fo h.
+    have {}H f: exists r, f = r \Fo h.
       have [->|nz_f] := eqVneq f 0; first by exists 0; rewrite comp_fracC_fec.
       move: (uniok_decomp (decomp_correct nz_h oncveQ)).
       move: (uniok_decomp (decomp_correct nz_f oncveQ)).
@@ -825,7 +824,7 @@ Section L_2_40.
 
   Import PreClosedField.
 
-  Hint Resolve closedK.
+  Hint Resolve closedK : core.
 
   Local Notation "D1 :~: D2" := (@ecdeqv _ E D1 D2).
 

@@ -1,0 +1,8 @@
+(coq.theory
+ (name EllipticCurves)
+ ;coq-native-disabled; (mode native)
+ (package coq-mathcomp-elliptic-curves)
+ (flags -w -ambiguous-paths
+        -w -notation-overridden
+        -w -redundant-canonical-projection
+        -w -projection-no-head-constant))

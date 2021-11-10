@@ -22,6 +22,8 @@ Require Import NArith ZArith BinPos Ring_polynom Field_theory.
 (* -------------------------------------------------------------------- *)
 Reserved Notation "x %:S" (at level 2, left associativity, format "x %:S").
 
+Declare Scope ssring.
+
 Notation "c %:S"   := (PEc c)     : ssring.
 Notation "''X_' i" := (PEX _ i)   : ssring.
 Notation "x + y"   := (PEadd x y) : ssring.
@@ -36,6 +38,8 @@ Notation "1" := PEI : ssring.
 Delimit Scope ssring with S.
 
 (* -------------------------------------------------------------------- *)
+Declare Scope ssfield.
+
 Notation "c %:S"   := (FEc c)     : ssfield.
 Notation "''X_' i" := (FEX _ i)   : ssfield.
 Notation "x + y"   := (FEadd x y) : ssfield.
@@ -60,55 +64,55 @@ Local Coercion Z.pos         : positive >-> Z.
 (* -------------------------------------------------------------------- *)
 Class find (T : Type) (x : T) (xs : seq T) (i:nat).
 
-Program Instance find0 (T : Type) (x : T) (xs : seq T)
+#[export] Program Instance find0 (T : Type) (x : T) (xs : seq T)
  : find x (x :: xs) 0.
 
-Program Instance findS (T : Type) (x : T) (y : T) (ys :  seq T) i
+#[export] Program Instance findS (T : Type) (x : T) (y : T) (ys :  seq T) i
  {_: find x ys i}
  : find x (y :: ys) i.+1 | 1.
 
 (* -------------------------------------------------------------------- *)
 Class closed (T : Type) (xs : seq T).
 
-Program Instance closed_nil T
+#[export] Program Instance closed_nil T
  : closed (T:=T) nil.
 
-Program Instance closed_cons T (x : T) (xs : seq T)
+#[export] Program Instance closed_cons T (x : T) (xs : seq T)
  {_: closed xs}
  : closed (x :: xs).
 
 (* -------------------------------------------------------------------- *)
 Class reify (R : idomainType) (a : R) (t : PExpr Z) (e : seq R).
 
-Program Instance reify_zero (R : idomainType) e : @reify R 0 0%S e.
-Program Instance reify_one  (R : idomainType) e : @reify R 1 1%S e.
+#[export] Program Instance reify_zero (R : idomainType) e : @reify R 0 0%S e.
+#[export] Program Instance reify_one  (R : idomainType) e : @reify R 1 1%S e.
 
-Program Instance reify_natconst (R : idomainType) n e
+#[export] Program Instance reify_natconst (R : idomainType) n e
   : @reify R n%:R ((n : Z)%:S)%S e.
 
-Program Instance reify_add (R : idomainType) a1 a2 t1 t2 e
+#[export] Program Instance reify_add (R : idomainType) a1 a2 t1 t2 e
   {_: @reify R a1 t1 e}
   {_: @reify R a2 t2 e}
   : reify (a1 + a2) (t1 + t2)%S e.
 
-Program Instance reify_opp (R : idomainType) a t e
+#[export] Program Instance reify_opp (R : idomainType) a t e
   {_: @reify R a t e}
   : reify (-a) (-t)%S e.
 
-Program Instance reify_natmul (R : idomainType) a n t e
+#[export] Program Instance reify_natmul (R : idomainType) a n t e
   {_: @reify R a t e}
   : reify (a *+ n) (t * (n : Z)%:S)%S e.
 
-Program Instance reify_mul (R : idomainType) a1 a2 t1 t2 e
+#[export] Program Instance reify_mul (R : idomainType) a1 a2 t1 t2 e
   {_: @reify R a1 t1 e}
   {_: @reify R a2 t2 e}
   : reify (a1 * a2) (t1 * t2)%S e.
 
-Program Instance reify_exp (R : idomainType) a n t e
+#[export] Program Instance reify_exp (R : idomainType) a n t e
   {_: @reify R a t e}
   : reify (a ^+ n) (t ^+ n)%S e | 1.
 
-Program Instance reify_var (R : idomainType) a i e
+#[export] Program Instance reify_var (R : idomainType) a i e
   `{find R a e i}
   : reify a ('X_i)%S e
   | 100.
@@ -130,39 +134,39 @@ Ltac reify xt xe :=
 (* -------------------------------------------------------------------- *)
 Class freify (F : fieldType) (a : F) (t : FExpr Z) (e : seq F).
 
-Program Instance freify_zero (F : fieldType) e : @freify F 0 0%F e.
-Program Instance freify_one  (F : fieldType) e : @freify F 1 1%F e.
+#[export] Program Instance freify_zero (F : fieldType) e : @freify F 0 0%F e.
+#[export] Program Instance freify_one  (F : fieldType) e : @freify F 1 1%F e.
 
-Program Instance freify_natconst (F : fieldType) n e
+#[export] Program Instance freify_natconst (F : fieldType) n e
   : @freify F n%:R ((n : Z)%:S)%F e.
 
-Program Instance freify_add (F : fieldType) a1 a2 t1 t2 e
+#[export] Program Instance freify_add (F : fieldType) a1 a2 t1 t2 e
   {_: @freify F a1 t1 e}
   {_: @freify F a2 t2 e}
   : freify (a1 + a2) (t1 + t2)%F e.
 
-Program Instance freify_opp (F : fieldType) a t e
+#[export] Program Instance freify_opp (F : fieldType) a t e
   {_: @freify F a t e}
   : freify (-a) (-t)%F e.
 
-Program Instance freify_natmul (F : fieldType) a n t e
+#[export] Program Instance freify_natmul (F : fieldType) a n t e
   {_: @freify F a t e}
   : freify (a *+ n) (t * (n : Z)%:S)%F e.
 
-Program Instance freify_mul (F : fieldType) a1 a2 t1 t2 e
+#[export] Program Instance freify_mul (F : fieldType) a1 a2 t1 t2 e
   {_: @freify F a1 t1 e}
   {_: @freify F a2 t2 e}
   : freify (a1 * a2) (t1 * t2)%F e.
 
-Program Instance freify_inv (F : fieldType) a t e
+#[export] Program Instance freify_inv (F : fieldType) a t e
   {_: @freify F a t e}
   : freify (a^-1) (t^-1)%F e.
 
-Program Instance freify_exp (F : fieldType) a n t e
+#[export] Program Instance freify_exp (F : fieldType) a n t e
   {_: @freify F a t e}
   : freify (a ^+ n) (t ^+ n)%F e | 1.
 
-Program Instance freify_var (F : fieldType) a i e
+#[export] Program Instance freify_var (F : fieldType) a i e
   `{find F a e i}
   : freify a ('X_i)%F e
   | 100.

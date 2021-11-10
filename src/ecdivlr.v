@@ -7,9 +7,9 @@
 (* -------------------------------------------------------------------- *)
 From mathcomp Require Import ssreflect ssrnat ssrbool eqtype seq.
 From mathcomp Require Import fintype choice tuple perm zmodp ssrfun.
-From mathcomp Require Import bigop ssralg ssrint ssrnum generic_quotient.
+From mathcomp Require Import bigop ssralg ssrint order ssrnum generic_quotient.
 
-Require Import xseq xmatrix polyall polydec polyfrac.
+Require Import ssrring xseq xmatrix polyall polydec polyfrac.
 Require Import SsrMultinomials.freeg.
 Require Import Setoid.
 
@@ -19,6 +19,8 @@ Require Import fraction ecpolyfrac.
 (* -------------------------------------------------------------------- *)
 Import GRing.Theory.
 Import Num.Theory.
+Import Order.POrderTheory.
+Import Order.TotalTheory.
 Import fraction.FracField.
 Import fracfield.FracField.
 
@@ -47,7 +49,7 @@ Section LinearReduction.
 
   Import PreClosedField.
 
-  Hint Resolve closedK.
+  Hint Resolve closedK : core.
 
   Local Notation clK := (ClosedFieldType K closedK).
   Local Notation PEF := (@tofrac _ \o ((ecX E) \o polyC)).
@@ -111,8 +113,6 @@ Section LinearReduction.
     as ecdeqv_morph_add.
   Proof. by move=> D1 D2 eqv D'1 D'2 eqv'; apply: ecdeqv_add. Qed.
 
-  Require Import ssrring.
-
   Lemma Nsym_ecdivpE (p : ecpoly) cs:
        (forall x y, y != 0 -> (p.[x, y] != 0) || (p.[x, -y] != 0))
     -> (forall x y, (x, y) \in cs -> oncurve (|x, y|))
@@ -121,7 +121,7 @@ Section LinearReduction.
     -> ecdivp p = \sum_(i <- cs) << (|i.1, i.2|) >> + << order p%:F ∞ *g ∞ >>.
   Proof.
     move=> Nsym csoncve csok; have [->|nz_p] := eqVneq p 0.
-      rewrite ecdivp0 norm0 roots0 => /perm_eq_small.
+      rewrite ecdivp0 norm0 roots0 => /perm_small_eq.
       move/(_ (erefl true)); case: {csok csoncve} cs => [|//] _.
       by rewrite big_nil order0 freegU0 addr0.
     move=> csroots; apply/eqP/freeg_eqP => ecp.
@@ -140,8 +140,8 @@ Section LinearReduction.
     rewrite {1}orderF poly_order_mu // -conjp_normp.
     rewrite tofracM order_mul ?(mulf_neq0, tofrac_eq0, conjp_eq0) //.
     have [z_y|nz_y] := eqVneq y 0; first rewrite z_y.
-      rewrite -conjF -{4}[0]oppr0 (order_conj _ (|x, 0|)).
-      rewrite eqxx /= -mulr2n PoszM pmulrn mulrzz => /mulIf <- //.
+      rewrite -conjF -{2}[0]oppr0 (order_conj _ (|x, 0|)).
+      rewrite /= -mulr2n PoszM pmulrn mulrzz => /mulIf <- //.
       rewrite (bigID (fun i => i.1 == x)) /= addrC big1; last first.
         by move=> i ne_i1_x; rewrite coeffU eqE /= (negbTE ne_i1_x) mulr0.
       rewrite add0r big_seq_cond (eq_bigr (fun i => 1)); last first.
@@ -150,7 +150,7 @@ Section LinearReduction.
         by rewrite eq_x'x -(eqP oncve) z_y expr0n /= sqrf_eq0 => ->.
       rewrite -big_seq_cond -big_filter big_const_seq count_predT.
       rewrite -Monoid.iteropE /= -/(GRing.natmul _ _) size_filter.
-      by rewrite roots_mu ?norm_eq0 // -(perm_eqP csroots) count_map natz.
+      by rewrite roots_mu ?norm_eq0 // -(permP csroots) count_map natz.
     have [z_ord|] := eqVneq (order p%:F (|x, y|)) 0.
       move=> _; rewrite z_ord big_seq big1 ?addr0 //.
       move=> [x' y'] x'y'_in_cs; rewrite coeffU mul1r.
@@ -159,11 +159,11 @@ Section LinearReduction.
       by case: eq => -> -> /negbTE ->.
     rewrite -order_poly_cmp0 // negbK => /eqP z_pxy.
     have := (Nsym x y nz_y); rewrite z_pxy eqxx /= => nz_pxNy.
-    rewrite -conjF -{3}[y]opprK (order_conj _ (|x, -y|)).
+    rewrite -conjF -{2}[y]opprK (order_conj _ (|x, -y|)).
     have ->: order p%:F (|x, -y|) = 0.
       move: nz_pxNy; rewrite order_poly_cmp0 -?(oncurveN E (|x, y|)) //.
       by move/eqP => ->.
-    rewrite addr0 => <-; rewrite (negbTE nz_y) muln1.
+    rewrite addr0 => <-; rewrite muln1.
     rewrite (bigID (fun i => i.1 == x)) /= addrC big1; last first.
       by move=> i ne_i1_x; rewrite coeffU eqE /= (negbTE ne_i1_x) mulr0.
     rewrite add0r big_seq_cond (eq_bigr (fun i => 1)); last first.
@@ -175,7 +175,7 @@ Section LinearReduction.
       by rewrite (negbTE nz_pxNy).
     rewrite -big_seq_cond -big_filter big_const_seq count_predT.
     rewrite -Monoid.iteropE /= -/(GRing.natmul _ _) size_filter.
-    by rewrite roots_mu ?norm_eq0 // -(perm_eqP csroots) count_map natz.
+    by rewrite roots_mu ?norm_eq0 // -(permP csroots) count_map natz.
   Qed.
 
   Lemma lrline p1 p2:
@@ -209,23 +209,23 @@ Section LinearReduction.
         move: (@ECGroup.thdimp K E (x1, y1) (x2, y2)).
         rewrite h => /(_ nz_u) /=; rewrite -/z; move: (erefl (normp r)).
         rewrite {1}/r {1}normpE /= => /(congr1 ( *%R (u ^- 2)%:P)).
-        rewrite mulrBr [X in _-X=_]mulrA -polyC_exp -polyC_mul.
+        rewrite mulrBr [X in _-X=_]mulrA -polyC_exp -polyCM.
         rewrite mulVf ?expf_neq0 // polyC1 mul1r -{1}exprVn.
         rewrite polyC_exp -exprMn !mul_polyC => /(congr1 -%R).
         rewrite opprB => -> /eqP; rewrite eqr_oppLR => /eqP.
         move/(congr1 ( *%R (u^+2)%:P)); rewrite -mul_polyC mulrA.
-        rewrite -exprVn 2!polyC_exp -exprMn -polyC_mul divff //.
-        rewrite polyC1 expr1n mul1r => ->; apply/perm_eqlP => x.
-        rewrite mulrN -mulNr -polyC_exp -[X in roots (X * _)]polyC_opp.
+        rewrite -exprVn 2!polyC_exp -exprMn -polyCM divff //.
+        rewrite polyC1 expr1n mul1r => ->; apply/permPl => x.
+        rewrite mulrN -mulNr -polyC_exp -[X in roots (X * _)]polyCN.
         rewrite -!mulrA mul_polyC roots_mulC ?(oppr_eq0, expf_neq0) //.
-        move: x; apply/perm_eqlP; move: (perm_eq_roots_factors [:: x1; x2; z]).
+        move: x; apply/permPl; move: (perm_eq_roots_factors [:: x1; x2; z]).
         by rewrite unlock /= mulr1.
       move=> rsr; pose yz := u^-1 * (c - v * z); have NaE: \- a = (|z, yz|).
         rewrite -ECGroup.ladd_addE /ECGroup.ladd !(oncve_1, oncve_2).
         by rewrite h (negbTE nz_u) /yz /z.
       pose cs := [:: (x1, y1); (x2, y2); (z, yz)].
       rewrite (@Nsym_ecdivpE _ cs); last first.
-      + by rewrite /cs /= perm_eq_sym.
+      + by rewrite /cs /= perm_sym.
       + move=> x y; rewrite /cs mem_seq3; case/or3P => /eqP;
           case=> -> ->; rewrite /r /eceval !hornerE /=.
         * by move: (ECGroup.line_okl E (x1, y1) (x2, y2)); rewrite h.
@@ -244,9 +244,8 @@ Section LinearReduction.
       rewrite /maxn; case: ltnP => /=; first by rewrite -freegUN.
       have [->|nz_v] := eqVneq v 0.
         by rewrite scale0r sub0r size_opp size_polyC; case: (c != 0).
-      have {1}->: c = v * (c / v) by rewrite mulrCA divff // mulr1.
-      rewrite !polyC_mul -{1}mul_polyC -mulrBr mul_polyC -polyC_mul.
-      by rewrite size_scale // size_XsubC.
+      set p := size _; suff ->: p = 2 by [].
+      by rewrite {}/p; apply/eqP/size_poly2P; exists (v, c).
     case: (ecdeqv_lineS oncve_a) => f /eqP; rewrite subr0 eq_sym.
     rewrite subr_eq eq_sym -subr_eq => /eqP/esym {1}-> /eqP.
     rewrite eq_sym subr_eq eq_sym -subr_eq => /eqP <-.
@@ -306,7 +305,7 @@ Section LinearReduction.
     rewrite addrC [<<px>>+_]addrC -!addrA; apply/ecdeqv_addr.
     rewrite [-_+_]addrC freegUB {}/px {}/psx.
     set k := coeff _ _; have k_ge0: k >= 0 by move/fgposP/(_ p): D_ge0.
-    rewrite {1 3}[k]intEsign ltrNge k_ge0 expr0 mul1r.
+    rewrite {1 3}[k]intEsign ltNge k_ge0 expr0 mul1r.
     move: {k_ge0} k => k; move: (absz _) => {k} n; rewrite /iterop.
     set f := fun n q => _; have oncve_it k: oncurve (iteri k f ∞).
       by apply: oncurve_natmul.

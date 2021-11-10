@@ -126,9 +126,8 @@ Section PolyDec.
     forall (p : {poly K}), hasroot p -> root p (root1 p).
   Proof.
     move=> p; rewrite /root1; have [->|nz_p] := eqVneq p 0.
-    + by rewrite eqxx root0.
-    + rewrite /hasroot; rewrite (negbTE nz_p).
-      by case: (root1P p) => [[x P]|H] _ //=.
+    + by rewrite root0.
+    + by rewrite /hasroot; case: (root1P p) => [[x P]|H] _ //=.
   Qed.
 
   Lemma hasrootP (p : {poly K}):
@@ -221,7 +220,7 @@ Section PolyDec.
         (p = qq * \prod_(c <- roots p) ('X - c%:P))
       & ~~(hasroot qq).
   Proof.
-    move: {-2}p (erefl (size p)); elim: (size p) => [|[|n] IH] => {p} p.
+    move: {-2}p (erefl (size p)); elim: (size p) => [|[|n] IH] => {}p.
     + by move/eqP; rewrite size_poly_eq0 => ->.
     + move/eqP; case/size_poly1P => c nz_c -> _; rewrite rootsC.
       exists c%:P; first by rewrite big_nil mulr1.
@@ -263,7 +262,7 @@ Section PolyDec.
     (p * q) != 0 -> roots (p * q) =pl (roots p) ++ (roots q).
   Proof.
     rewrite mulf_eq0; case/norP => nz_p nz_q.
-    apply/perm_eqlP; rewrite /perm_eq; apply/allP => x _.
+    apply/permPl; rewrite /perm_eq; apply/allP => x _.
     rewrite /= count_cat -!roots_mu ?mulf_neq0 //.
     by rewrite mu_mul ?mulf_neq0.
   Qed.
@@ -271,7 +270,7 @@ Section PolyDec.
   Lemma perm_eq_roots_mul (p q : {poly K}):
     (p * q) != 0 -> roots (p * q) =p (roots p) ++ (roots q).
   Proof.
-    by move=> nz_pq; apply/perm_eqlP; apply: roots_mul.
+    by move=> nz_pq; apply/permPl; apply: roots_mul.
   Qed.
 
   (* ------------------------------------------------------------------ *)
@@ -279,14 +278,14 @@ Section PolyDec.
     c != 0 -> (roots (c *: p)) =pl (roots p).
   Proof.
     have [->|nz_p] := eqVneq p 0; first by rewrite scaler0 roots0.
-    move=> nz_c; apply/perm_eqlP; rewrite -mul_polyC.
+    move=> nz_c; apply/permPl; rewrite -mul_polyC.
     by rewrite roots_mul ?(mulf_neq0, polyC_eq0) // rootsC.
   Qed.
 
   Lemma perm_eq_roots_mulC (c : K) (p : {poly K}):
     c != 0 -> (roots (c *: p)) =p (roots p).
   Proof.
-    by move=> nz_c; apply/perm_eqlP; apply: roots_mulC.
+    by move=> nz_c; apply/permPl; apply: roots_mulC.
   Qed.
 
   (* ------------------------------------------------------------------ *)
@@ -298,7 +297,7 @@ Section PolyDec.
       by rewrite roots0; elim: n {n_gt0} => [|n IH].
     elim: n => [|[|n] IH] // _; rewrite exprS.
     + by rewrite expr0 mulr1 /= cats0.
-    apply/perm_eqlP; rewrite roots_mul ?(mulf_neq0, expf_neq0) //=.
+    apply/permPl; rewrite roots_mul ?(mulf_neq0, expf_neq0) //=.
     by rewrite perm_cat2l IH.
   Qed.
 
@@ -331,7 +330,7 @@ Section PolyDec.
     + by rewrite /roots size_XnsubC //= Hsqrt.
     set k := root1 ('X ^+ 2 - c%:P); have Ec: c = k ^+ 2.
     + by apply/eqP; rewrite eq_sym -root_XnsubC; apply root1_root.
-    exists k=> //; rewrite Ec polyC_exp subr_sqr -{2}[k]opprK polyC_opp.
+    exists k=> //; rewrite Ec polyC_exp subr_sqr -{2}[k]opprK polyCN.
     by rewrite roots_mul ?(mulf_neq0, polyXsubC_eq0) // !roots_factor /=.
   Qed.
 
@@ -385,7 +384,7 @@ Section PolyClosed.
       + move=> h; rewrite [r1]roots_factor_theorem_f [r2]roots_factor_theorem_f.
         have: perm_eq (roots r1) (roots r2).
           by apply/allP => x _; rewrite /= -!roots_mu // h.
-        move=> eq; rewrite (eq_big_perm _ eq) /=.
+        move=> eq; rewrite (perm_big _ eq) /=.
         apply (@eqp_trans _ (\prod_(i <- roots r2) ('X - i%:P))).
         * by apply/eqp_scale; rewrite lead_coef_eq0.
         * by rewrite eqp_sym; apply/eqp_scale; rewrite lead_coef_eq0.
@@ -429,7 +428,7 @@ Section PolyClosedField.
 
   Import PolyClosed.
 
-  Local Hint Extern 0 (GRing.ClosedField.axiom _) => exact: solve_monicpoly.
+  Local Hint Extern 0 (GRing.ClosedField.axiom _) => exact: solve_monicpoly : core.
 
   Lemma hasroot_size_neq1 (p : {poly K}): hasroot p = (size p != 1%N).
   Proof. by apply: hasroot_size_neq1. Qed.
@@ -462,7 +461,7 @@ Section PolyClosedField.
       exists r, q1 = r ^+ 2.
   Proof.
     move=> nz_p cop eq; case: (copsqr nz_p cop eq).
-    move=> r /eqpP [[c1 c2] /= /andP [nz_c1 nz_c2]] {eq} eq.
+    move=> r /eqpP [[c1 c2] /= /andP [nz_c1 nz_c2]] {}eq.
     exists ((sqrt (c2 / c1)) *: r).
     rewrite exprZn sqr_sqrt; apply: (mulfI (x := c1%:P)).
       by rewrite polyC_eq0.

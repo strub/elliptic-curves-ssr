@@ -7,11 +7,13 @@
 (* -------------------------------------------------------------------- *)
 From mathcomp Require Import ssreflect ssrnat ssrbool eqtype fintype.
 From mathcomp Require Import ssrfun choice seq tuple bigop ssralg.
-From mathcomp Require Import ssrint ssrnum generic_quotient.
+From mathcomp Require Import ssrint ssrnum generic_quotient order.
 (* ------- *) Require Import polyall fraction fracfield ssrring.
 
 Import GRing.Theory.
 Import Num.Theory.
+Import Order.POrderTheory.
+Import Order.TotalTheory.
 Import fraction.FracField.
 Import fracfield.FracField.
 Import Monoid.
@@ -30,6 +32,7 @@ Reserved Notation "{ 'pp' T }" (at level 0, format "{ 'pp'  T }").
 
 Reserved Notation "f .[! x ]" (at level 2, format "f .[! x ]").
 
+Declare Scope polyfrac_scope.
 Delimit Scope polyfrac_scope with F.
 
 Module FracInterp.
@@ -39,7 +42,7 @@ Section Defs.
   (*~option G / use newType instead ? *)
   Inductive gproj (G : Type) : Type := GP_Finite of G | GP_Inf.
 
-  Arguments GP_Inf [G].
+  Arguments GP_Inf {G}.
 
   Implicit Types p : gproj G.
 
@@ -139,11 +142,11 @@ Section Defs.
     + have [->|nz_p1] := eqVneq p1 0.
       * by case: (p2 == 0); rewrite !simpm !eqxx.
       have [->|nz_p2] := eqVneq p2 0.
-      * by rewrite !eqxx simpm eqxx.
+      * by rewrite simpm eqxx.
       by rewrite mulf_eq0 !(negbTE nz_p1, negbTE nz_p2).
     + have [->|nz_p3] := eqVneq p3 0.
-      * by rewrite eqxx simpm mulp0.
-      rewrite (negbTE nz_p3); case: (p1 == 0); rewrite /= ?simpm //.
+      * by rewrite simpm mulp0.
+      case: (p1 == 0); rewrite /= ?simpm //.
       by rewrite (negbTE nz_p3).
     + by case: (p1 == 0)=> //=; rewrite eqxx.
     + by rewrite mulf_eq0; case: (p2 == 0)=> //=; rewrite simpm.
@@ -273,7 +276,7 @@ Section PolyRatioCanonize.
       by rewrite dvdp_div_eq0 ?(negbTE nz_d) // dvdp_gcdr.
     rewrite scaler_eq0 invr_eq0 => /norP [nz_lcg nz_gcd].
     rewrite monicE lead_coefZ mulrC divff // eqxx andbT.
-    rewrite ?(coprimep_scalel, coprimep_scaler) ?invr_eq0 //.
+    rewrite ?(coprimepZl, coprimepZr) ?invr_eq0 //.
     have [->|nz_n] := eqVneq n 0.
       by rewrite gcd0p div0p divpp // coprime0p eqpxx.
     by rewrite coprimep_div_gcd ?(nz_d, nz_n).
@@ -443,20 +446,18 @@ Section Interp.
       by rewrite minnC muNroot // min0n expr0 !divp1 (negbTE nz_qx).
     move=> z_qx; case: (p =P 0) => [->|/eqP nz_p].
       by apply: FINMuLtZNum => //; rewrite mu0 mu_gt0.
-    case: (ltngtP (\mu_x p) (\mu_x q)).
-    + move=> lt_mu_pq; rewrite /minn lt_mu_pq.
-      set tx := (_ ^+ (\mu__ _)); have z_qdx: root (q %/ tx) x.
+    case: (ltngtP (\mu_x p) (\mu_x q)) => [lt_mu_pq|gt_mu_pq|eq_mu].
+    + set tx := (_ ^+ (\mu__ _)); have z_qdx: root (q %/ tx) x.
         rewrite -mu_gt0 ?divp_rootn //; last by rewrite ltnW.
         by rewrite mu_div ?subn_gt0 // ltnW.
       by rewrite (eqP z_qdx) eqxx; apply: FINMuLt.
-    + move=> gt_mu_pq; rewrite minnC /minn gt_mu_pq.
-      set tx := (_ ^+ (\mu__ _)); have nz_qdx: (q %/ tx).[x] != 0.
+    + set tx := (_ ^+ (\mu__ _)); have nz_qdx: (q %/ tx).[x] != 0.
         by rewrite (rootPf (rootN_div_mu x nz_q)).
       have z_pdx: root (p %/ tx) x.
         rewrite -mu_gt0 ?divp_rootn //; last by rewrite ltnW.
         by rewrite mu_div ?subn_gt0 // ltnW.
       by rewrite (negbTE nz_qdx) (eqP z_pdx) mul0r; apply: FINMuGt.
-    + move=> eq_mu; rewrite eq_mu minnn (rootPf (rootN_div_mu x nz_q)).
+    + rewrite eq_mu (rootPf (rootN_div_mu x nz_q)).
       by rewrite -{1}eq_mu; apply: FINMuEq; last apply/eqP.
   Qed.
 
@@ -525,7 +526,7 @@ Section Interp.
     wlog: f1 f2 / (sgp f1.[!x] <= sgp f2.[!x]).
       move=> wlog posi; case: (lerP (sgp f1.[!x]) (sgp f2.[!x])).
         by move/wlog => /(_ posi).
-      by move/ltrW => /wlog; rewrite addrC mulrC mulC; apply.
+      by move/ltW => /wlog; rewrite addrC mulrC mulC; apply.
     elim/fracredW: f1 => n1 d1 cop_n1d1 mon_d1.
     elim/fracredW: f2 => n2 d2 cop_n2d2 mon_d2.
     have nz_d1: d1 != 0 by apply: monic_neq0.
@@ -685,13 +686,13 @@ Section PolyFracDeg.
 
   Lemma Posz_maxn: {morph Posz : n m / (maxn n m)%N >-> Num.max n m}.
   Proof.
-    move=> n m; rewrite /maxn /Num.max lez_nat.
+    move=> n m; rewrite /maxn /Num.max ltz_nat.
     by rewrite ltnNge; case: (_ <= _)%N.
   Qed.
 
   Lemma Posz_minn: {morph Posz : n m / (minn n m)%N >-> Num.min n m}.
   Proof.
-    move=> n m; rewrite /minn /Num.min lez_nat ltn_neqAle andbC.
+    move=> n m; rewrite /minn /Num.min ltz_nat ltn_neqAle andbC.
     by case: ltnP => //= _; case: eqP => [->|].
   Qed.
 
@@ -725,14 +726,13 @@ Section PolyFracDeg.
   Proof.
     elim/fracW: f1 => n1 d1 nz_d1; elim/fracW: f2 => n2 d2 nz_d2.
     case: (boolP (n1 == 0)) => [/eqP->|nz_n1].
-      by rewrite !(mul0r, add0r) ler_maxr lerr orbT.
+      by rewrite !(mul0r, add0r) lexU lexx orbT.
     case: (boolP (n2 == 0)) => [/eqP->|nz_n2].
-      by rewrite !(mul0r, addr0) ler_maxr lerr.
+      by rewrite !(mul0r, addr0) lexU lexx.
     rewrite addf_div ?tofrac_eq0 // -!(tofracM, tofracD).
     rewrite !(mulf_eq0, invr_eq0, tofrac_eq0).
     rewrite (negbTE nz_d1) (negbTE nz_d2) !orbF => nz_p.
     rewrite !fdegE ?mulf_neq0 // size_mul //.
-
     move: (size_add (n1 * d2) (n2 * d1)).
     rewrite -lez_nat Posz_maxn !size_mul // 2?predn_int; first last.
     + by rewrite lt0n addn_eq0 size_poly_eq0 (negbTE nz_n1).
@@ -840,7 +840,7 @@ Section PolyFracProptField.
       case/andP: nz_c => nz_c1 nz_c2; apply/(mulfI (x := c.1%:PF)).
         by rewrite tofrac_eq0 polyC_eq0.
       rewrite eq mulrCA !mulrA; congr (_ * f2).
-      by rewrite -!tofracM -polyC_mul mulrAC -mulrA divff // mulr1.
+      by rewrite -!tofracM -polyCM mulrAC -mulrA divff // mulr1.
     + apply/eqfP; exists (1, c) => /=; first by rewrite oner_eq0.
       by rewrite mul1r.
   Qed.
@@ -929,10 +929,11 @@ Section PolyFracDeriv.
 End PolyFracDeriv.
 
 (* -------------------------------------------------------------------- *)
+Require Import polydec.
+
 Section FinterpAllFinite.
   Variable K : closedFieldType.
 
-  Require Import polydec.
   Import FracInterp.
 
   (*XXX*)
@@ -960,7 +961,7 @@ Section FinterpAllFinite.
   exists (n %/ d); rewrite {1}(divp_eq n d).
   rewrite -[X in _ = X]addr0; congr (_ + _).
   apply/modp_eq0P; rewrite [d]roots_factor_theorem_f //.
-  rewrite dvdp_scalel ?lead_coef_eq0 //.
+  rewrite dvdpZl ?lead_coef_eq0 //.
   apply: roots_dvdp; apply/allP=> x x_root_d /=.
   by rewrite -roots_mu.
   Qed.
@@ -1046,7 +1047,7 @@ Section PolyFracCntField.
   Proof.
     apply: (iffP idP).
     + move/isfcntP; case=> [[c1 c2] /= nz_c2 Ef]; exists (c1 / c2).
-      rewrite Ef polyC_mul -polyC_inv tofracM tofracrV //.
+      rewrite Ef polyCM -polyCV tofracM tofracrV //.
       by rewrite poly_unitE coefC eqxx unitfE size_polyC nz_c2.
     + case=> c Ef; apply/isfcntP; exists (c, 1) => /=.
         by rewrite oner_eq0. by rewrite tofrac1 divr1.
@@ -1142,7 +1143,7 @@ Section PolyFracCompTheory.
     have: p %| (r *: q ^+ k.+1).
       apply/dvdpP; exists (q * S) => /=.
       by rewrite -mulrA [S * _]mulrC eq -scalerAr exprS.
-    rewrite dvdp_scaler // => dvd_p_qSk.
+    rewrite dvdpZr // => dvd_p_qSk.
     have := cop_pq; rewrite -(coprimep_pexpr (k := k.+1)) //.
     move/coprimepP => -/(_ p (dvdpp _) dvd_p_qSk).
     by rewrite -size_poly_eq1 eqn_leq leqNgt sz_p.
@@ -1197,7 +1198,7 @@ Section PolyFracCompTheory.
     + by apply: monic_neq0.
     rewrite /finterp_red !horner_map /= !(tofrac_eq0, polyC_eq0).
     have [//|nz_dc] := altP (d.[c] =P 0).
-    rewrite polyC_mul -polyC_inv tofracM tofracrV //.
+    rewrite polyCM -polyCV tofracM tofracrV //.
     by rewrite poly_unitE coefC eqxx unitfE size_polyC nz_dc.
   Qed.
 End PolyFracCompTheory.

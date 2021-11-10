@@ -38,7 +38,7 @@ Section PolyAll.
   (* ------------------------------------------------------------------ *)
   Lemma polyC_natr: forall n, n%:R%:P = n%:R :> {poly R}.
   Proof.
-    by elim=> [|n IH] //=; rewrite -addn1 !natrD polyC_add IH.
+    by elim=> [|n IH] //=; rewrite -addn1 !natrD polyCD IH.
   Qed.
 
   (* ------------------------------------------------------------------ *)
@@ -95,7 +95,7 @@ Section PolyAll.
   Proof.
     rewrite mulrDl !simp.
     rewrite sqrrB expr2 mulr2n -mulrDr -mulrBr mulrC.
-    rewrite -polyC_exp -polyC_add -cons_poly_def.
+    rewrite -polyC_exp -polyCD -cons_poly_def.
     by rewrite polyseq_cons polyseqXsubC.
   Qed.
 
@@ -136,7 +136,7 @@ Section PolyAll.
       odd (size (p ^+ n)) = if odd n then odd (size p) else true.
   Proof.
     move=> n p nz_p; rewrite size_id_exp //=.
-    rewrite odd_sub ?leq_pmulr // ?lt0n ?size_poly_eq0 // odd_mul.
+    rewrite oddB ?leq_pmulr // ?lt0n ?size_poly_eq0 // oddM.
     by case: (odd n)=> //=; rewrite addbT negbK.
   Qed.
 
@@ -187,8 +187,8 @@ Section PolyAll.
   Lemma mu_factor (x c : R): \mu_x ('X - c%:P) = (x == c).
   Proof.
     have [->|x_neq_c] := eqVneq x c.
-    + by rewrite eqxx mu_XsubC.
-    apply/eqP; rewrite (negbTE x_neq_c) eqn0Ngt mu_gt0.
+    + by rewrite mu_XsubC.
+    apply/eqP; rewrite eqn0Ngt mu_gt0.
     by rewrite root_XsubC. by rewrite polyXsubC_eq0.
   Qed.
 
@@ -237,7 +237,7 @@ Section PolyAll.
     coprimep p (\prod_(q <- qs) q) = all [pred q | coprimep p q] qs.
   Proof.
     elim: qs=> [|q qs IH]; first by rewrite big_nil coprimep1.
-    by rewrite big_cons coprimep_mulr IH.
+    by rewrite big_cons coprimepMr IH.
   Qed.
 
   (* -------------------------------------------------------------------- *)
@@ -257,8 +257,8 @@ Proof.
   apply: (iffP idP).
   + move/size_poly2P=> [[c1 c2] /= nz_c1 ->].
     exists (c2 / c1); apply/eqpf_eq; exists c1 => //.
-    rewrite scalerBr; congr (_ - _); rewrite -mul_polyC polyC_mul.
-    rewrite -polyC_inv mulrCA divrr ?mulr1 // poly_unitE.
+    rewrite scalerBr; congr (_ - _); rewrite -mul_polyC polyCM.
+    rewrite -polyCV mulrCA divrr ?mulr1 // poly_unitE.
     by rewrite size_polyC nz_c1 coefC /= unitfE.
   + by case=> c /eqpf_eq [c' nz_c' ->]; rewrite size_scale // size_XsubC.
 Qed.

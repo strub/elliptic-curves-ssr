@@ -165,7 +165,7 @@ Qed.
 
 Lemma mu_opp p x : \mu_x (-p) = \mu_x p.
 Proof.
-rewrite -mulN1r -polyC1 -polyC_opp mul_polyC mu_mulC //.
+rewrite -mulN1r -polyC1 -polyCN mul_polyC mu_mulC //.
 by rewrite -oppr0 (inj_eq (inv_inj (@opprK _))) oner_eq0.
 Qed.
 

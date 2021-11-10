@@ -7,13 +7,15 @@
 (* -------------------------------------------------------------------- *)
 From mathcomp Require Import ssreflect ssrnat ssrbool eqtype seq.
 From mathcomp Require Import fintype choice bigop ssralg ssrfun ssrint.
-From mathcomp Require Import ssrnum generic_quotient.
+From mathcomp Require Import ssrnum order generic_quotient.
 
 Require Import fraction fracfield polyall polyfrac polydec.
 Require Import ssrring ec ecpoly ecorder.
 
 Import GRing.Theory.
 Import Num.Theory.
+Import Order.POrderTheory.
+Import Order.TotalTheory.
 Import fraction.FracField.
 Import fracfield.FracField.
 Import FracInterp.
@@ -135,7 +137,7 @@ Section ECEval.
     have hodd: odd (degree (p * q)) = ~~ (odd (degree p) (+) odd (degree q)).
       rewrite degree_mul_id ?mulf_neq0 //.
       have := nz_p; rewrite -degree_eq0; case: (degree p) => [//|n] _.
-      by rewrite addSn /= odd_add addNb negbK.
+      by rewrite addSn /= oddD addNb negbK.
     case: (boolP (odd (degree p))); case: (boolP (odd (degree q))).
     + move=> qo po; rewrite (ho _ qo) (ho _ po) -lead_coefM.
       move: hodd; rewrite qo po => /= /degree_odd_leadc ->.
@@ -252,10 +254,10 @@ Section ECEval.
       * rewrite gtn_max; case/andP=> _; have [->|nz_n21] := eqVneq n2.1 0.
           move=> _; rewrite size_poly0 lt0n size_poly_eq0.
           by rewrite (degree_even_nzpY nz_n1 h1).
-        rewrite nz_n21 muln1; have [->|nz_n12] := eqVneq n1.2 0.
+        rewrite muln1; have [->|nz_n12] := eqVneq n1.2 0.
           by rewrite size_poly0.
         have := h1; rewrite degreeE; have [->|nz_n11] := eqVneq n1.1 0.
-          rewrite size_poly0 eqxx maxn0 -[size _]prednK; last first.
+          rewrite size_poly0 maxn0 -[size _]prednK; last first.
             by rewrite lt0n size_poly_eq0.
           by rewrite mulnS /= mul2n odd_double.
         move=> _; move: h1; rewrite odd_degree_lt // negbK.
@@ -264,10 +266,10 @@ Section ECEval.
         move=> le1 le2; apply: (@leq_trans (size n1.2).-1) => //.
         by case: (size n1.2) le1.
       * rewrite gtn_max; case/andP=> _; have [->|nz_n11] := eqVneq n1.1 0.
-          by rewrite eqxx !muln0.
-        rewrite nz_n11 muln1; have [->|nz_n21] := eqVneq n2.1 0.
+          by rewrite !muln0.
+        rewrite muln1; have [->|nz_n21] := eqVneq n2.1 0.
           by move=> _; rewrite size_poly0 lt0n size_poly_eq0.
-        by rewrite nz_n21 muln1 ltn_mul2l /= ltnS.
+        by rewrite muln1 ltn_mul2l /= ltnS.
   Qed.
 
   Lemma leadcD_eq0 (f g : ecpoly): 
@@ -480,13 +482,13 @@ Section ECEval.
       (0 <= order f p).
   Proof.
     have [->|nz_f] := eqVneq f 0.
-      by rewrite order0 eval0 lerr; constructor; exists 0.
+      by rewrite order0 eval0 lexx; constructor; exists 0.
     case oncve: (oncurve p); last first.
-      rewrite order_outcve ?eval_outcve ?oncve // lerr.
+      rewrite order_outcve ?eval_outcve ?oncve // lexx.
       by constructor; exists 0.
     apply: (iffP idP); last first.
       by case=> c; rewrite /eval; case: (order _ _).
-    rewrite ler_eqVlt; case/orP.
+    rewrite le_eqVlt; case/orP.
       rewrite eq_sym => /(eval_eq0_orderP oncve nz_f).
       by case=> c _ eq; exists c.
     rewrite /eval; case: (order _ _)=> [[|o]|o] // _.
@@ -570,14 +572,14 @@ Section ECEval.
     wlog: f g / (order f p) <= (order g p).
       move=> wlog sg; case: (lerP (order f p) (order g p)).
         by move/wlog; apply.
-      move/ltrW=> cmp_ord; rewrite mulrC [X in _ = X]Monoid.mulmC /=.
+      move/ltW=> cmp_ord; rewrite mulrC [X in _ = X]Monoid.mulmC /=.
       by apply: wlog=> //; rewrite mulrC.
     case: (f =P 0) => [->|/eqP nz_f].
       move=> _; by rewrite mul0r eval0 mul0p.
     case: (g =P 0) => [->|/eqP nz_g].
       by move=> _; rewrite mulr0 eval0 mulp0.
     move=> cmp_ord; case: (ltrP (order f p) 0) => [ord_fp_lt0|].
-      rewrite nmulr_rge0 ?sgz_lt0 // sgz_le0 ler_eqVlt; case/orP.
+      rewrite nmulr_rge0 ?sgz_lt0 // sgz_le0 le_eqVlt; case/orP.
         move=> z_ord_gp; rewrite order_lt0_eval; last first.
           by rewrite order_mul ?mulf_neq0 // (eqP z_ord_gp) addr0.
         case/(eval_eq0_orderP oncve nz_g): z_ord_gp => [c nz_c ->].
@@ -585,7 +587,7 @@ Section ECEval.
       move=> ord_gp_lt0; rewrite !order_lt0_eval //=.
       by rewrite order_mul ?mulf_neq0 //= ltr_snsaddr.
     move=> ord_fp_ge0; have ord_gp_ge0: (0 <= order g p).
-      by apply: (ler_trans ord_fp_ge0).
+      by apply: (le_trans ord_fp_ge0).
     move=> _; rewrite /eval order_mul ?mulf_neq0 //.
     move: ord_fp_ge0 ord_gp_ge0; case: (order f p)=> [[|n1]|n1] //; last first.
       by case: (order g p)=> [[|n2]|n2]; rewrite //= ?mul0r.
@@ -642,7 +644,7 @@ Section ECEval.
     have [oncve|outcve] := boolP (oncurve p); last first.
       by rewrite !eval_outcve //= oppr0.
     rewrite -mulN1r; have ->: -1 = (((-1)%:P)%:E)%:F.
-      by rewrite polyC_opp ecXN tofracN.
+      by rewrite polyCN ecXN tofracN.
     rewrite evalM_finL ?orderC // evalC //; case: (eval f p) => [x|] /=.
     + by rewrite mulN1r.
     + by rewrite oppr_eq0 oner_eq0.
@@ -682,14 +684,14 @@ Section ECEval.
       have/order_lt0_eval := hg => -> /=.
       have ->: eval f p \+ [inf] = [inf] by case (eval _ _).
       apply/eqP; rewrite -eval_lt0_order order_add.
-      + by rewrite ltr_minl hg orbT.
+      + by rewrite lt_minl hg orbT.
       + by rewrite mulf_neq0.
-      + move: (ltr_le_trans hg hf); rewrite ltr_neqAle.
+      + move: (lt_le_trans hg hf); rewrite lt_neqAle.
         by case/andP=> h _; rewrite eq_sym.
     wlog: f g nz_f nz_g nz_fDg hf hg / order f p <= order g p; last move=> le.
       move=> wlog; case: (lerP (order f p) (order g p)).
         by move/wlog; apply.
-      move/ltrW/wlog; rewrite [f + g]addrC [_ \+ _]Monoid.mulmC.
+      move/ltW/wlog; rewrite [f + g]addrC [_ \+ _]Monoid.mulmC.
       by apply => //; rewrite addrC.
     have := decomp_correct nz_f oncve;
     have := decomp_correct nz_g oncve;
@@ -741,16 +743,16 @@ Section ECEval.
       have [z_fd|nz_fd] := eqVneq fd 0.
       + by rewrite z_fd absz0 eqxx !simpm /= addf_div.
       + rewrite absz_eq0 (negbTE nz_fd) !simpm /=.
-        move: hf; rewrite ler_eqVlt eq_sym (negbTE nz_fd) /=.
-        move/(ltr_le_trans) => /(_ _ le); rewrite ltr_neqAle.
+        move: hf; rewrite le_eqVlt eq_sym (negbTE nz_fd) /=.
+        move/(lt_le_trans) => /(_ _ le); rewrite lt_neqAle.
         case/andP; rewrite eq_sym => nz_gd _; rewrite absz_eq0.
         by rewrite (negbTE nz_gd) !mul0r.
-    * have := hf; rewrite ler_eqVlt; case/orP; last first.
+    * have := hf; rewrite le_eqVlt; case/orP; last first.
         move=> gt0_ordf; have gt0_ordg: 0 < order g p.
-          by apply: (ltr_le_trans gt0_ordf).
+          by apply: (lt_le_trans gt0_ordf).
         have: 0 < order (f + g) p.
-          apply: (@ltr_le_trans _ (Num.min (order f p) (order g p))).
-          + by rewrite ltr_minr gt0_ordf gt0_ordg.
+          apply: (@lt_le_trans _ _ (Num.min (order f p) (order g p))).
+          + by rewrite lt_minr gt0_ordf gt0_ordg.
           + by apply order_add_leq; rewrite ?mulf_neq0.
         by move=> gt0_ordfDg; rewrite !order_gt0_eval //= addr0.
       rewrite -/fd => /eqP /esym z_fd; rewrite z_fd -exprnP expr0 mul1r subr0.
@@ -776,7 +778,7 @@ Section ECEval.
         rewrite degree_mul_id ?mulf_neq0 //.
         have := uokg; rewrite pE /= => /uniok_inf_degeq => ->.
         rewrite -!degree_mul_id ?mulf_neq0 // {1}[df*ng]mulrC.
-        rewrite -degfE ler_eqVlt; case/orP.
+        rewrite -degfE le_eqVlt; case/orP.
         * move/eqP=> z_degf; have h:
               leadc (nf * dg + ng * df)
             = leadc (nf * dg) + leadc (ng * df).
@@ -818,7 +820,7 @@ Section ECEval.
         rewrite -/n -/d eq_degnd subrr => /esym z_degfDg.
         have: order (f + g) p = 0.
           by rewrite pE order_fdegree z_degfDg oppr0.
-        have := hg; rewrite ler_eqVlt -/gd eq_sym (negbTE nz_gd) /=.
+        have := hg; rewrite le_eqVlt -/gd eq_sym (negbTE nz_gd) /=.
         move/order_gt0_eval => ->; rewrite Monoid.mulm1 => z_ordfDg.
         rewrite /eval z_ordfDg -/fd z_fd /= -/nf -/df.
         move/uniok_decomp: (decomp_correct nz_fDg oncve).
@@ -840,7 +842,7 @@ Section ECEval.
   Proof.
     pose i := fun (n d : {poly K}) => rlift (ecX E) (n // d).
     have ->: n%:E // d%:E = i n d by rewrite /i rliftE.
-    rewrite {}/i; elim/fracredW: (n // d) => {n d} n d.
+    rewrite {}/i; elim/fracredW: (n // d) => {}n {}d.
     move=> cop_n_d mon_d oncve; have nz_d := (monic_neq0 mon_d).
     rewrite rliftE /= => ord; have [->|nz_n] := eqVneq n 0.
       by rewrite !mul0r eval0 finterp0.

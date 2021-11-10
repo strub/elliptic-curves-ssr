@@ -7,13 +7,15 @@
 (* -------------------------------------------------------------------- *)
 From mathcomp Require Import ssreflect ssrnat ssrbool eqtype seq.
 From mathcomp Require Import fintype choice bigop ssralg ssrfun ssrint.
-From mathcomp Require Import ssrnum generic_quotient.
+From mathcomp Require Import order ssrnum generic_quotient.
 
 Require Import fracfield fraction polyall polyfrac polydec.
 Require Import ec ecpoly eceval ecorder SsrMultinomials.freeg.
 
 Import GRing.Theory.
 Import Num.Theory.
+Import Order.POrderTheory.
+Import Order.TotalTheory.
 Import FracField.
 
 Local Open Scope ring_scope.
@@ -35,7 +37,7 @@ Proof. by move=> x1 x2 /= []. Qed.
 Lemma pairE (T U : Type) (p : T * U): (p.1, p.2) = p.
 Proof. by case: p. Qed.
 
-Local Hint Immediate inj_pair1 inj_pair2.
+Local Hint Immediate inj_pair1 inj_pair2 : core.
 
 Reserved Notation "D1 :~: D2" (at level 70, no associativity).
 
@@ -167,7 +169,7 @@ Section ECDiv.
   Proof.
     rewrite /ecdivp; unlock; rewrite !degD !raddf_sum /=.
     rewrite -order_conj /= conjF conjpK; congr (_ + _).
-    rewrite (eq_big_perm _ (ecroots_conjp f)) /= big_map /=.
+    rewrite (perm_big _ (ecroots_conjp f)) /= big_map /=.
     apply: eq_bigr=> p _; rewrite -order_conj /= !degU.
     by rewrite conjF conjpK opprK.
   Qed.
@@ -228,8 +230,8 @@ Section ECDiv.
         rewrite ?eqxx //.
     * by rewrite eq_sym mul0r mulf_eq0; case/norP.
     * by rewrite mulr0 mulf_eq0; case/norP.
-    move/eqP=> eqr; rewrite (negbTE nz_n1) (negbTE nz_n2).
-    by rewrite addr_cross -!ecdivpM ?eqr ?[d1 * n2]mulrC // mulf_neq0.
+    move/eqP=> eqr; rewrite addr_cross.
+    by rewrite -!ecdivpM ?eqr ?[d1 * n2]mulrC // mulf_neq0.
   Qed.
 
   Canonical ecdiv_morph := PiMono1 (pi_ecdiv).
@@ -331,17 +333,16 @@ Section ECDiv.
   Lemma mem_negdiv R (f :{fraction ecpoly}):
     (R \in dom (fgneg (ecdiv f))) = (order f R < 0).
   Proof.
-    rewrite mem_dom inE coeff_fgnegE oppr_eq0 eqr_minl.
-    by rewrite -ltrNge ecdiv_coeffE.
+    rewrite mem_dom inE coeff_fgnegE oppr_eq0 eq_minl.
+    by rewrite -ltNge ecdiv_coeffE.
   Qed.
 
   Lemma mem_posdiv R (f : {fraction ecpoly}):
     (R \in dom (fgpos (ecdiv f))) = (order f R > 0).
   Proof.
-    rewrite mem_dom inE coeff_fgposE eqr_maxl.
-    by rewrite -ltrNge ecdiv_coeffE.
+    rewrite mem_dom inE coeff_fgposE eq_maxl.
+    by rewrite -ltNge ecdiv_coeffE.
   Qed.
-
 
   (* -------------------------------------------------------------------- *)
   Lemma deg_ecdiv_eq0 (f : {fraction ecpoly}): deg (ecdiv f) = 0.
@@ -413,7 +414,7 @@ Section ECDiv.
     have h:
       forall (f : {fraction ecpoly}) (c : K) p,
         order f p < 0 -> order f p = order (f + c%:PEF) p.
-    + move=> {f c} f c p; case oncve: (oncurve p); last first.
+    + move=> {}f {}c p; case oncve: (oncurve p); last first.
         by rewrite order_outcve // oncve.
       have [->|nz_c] := eqVneq c 0; first by rewrite /= addr0.
       have [->|nz_f] := eqVneq f 0; first by rewrite order0.
@@ -453,7 +454,7 @@ Section ECDiv.
           rewrite [n*_]mulrC !degree_mul_id ?neq0 // => {neq0}.
           rewrite degreeC // (uniok_inf_degeq uok).
           rewrite !(degree_expX, degree_expY) addn1 /= ltn_add2r.
-          by rewrite ltn_mul2r oE absz_gt0 neqr_lt ordf_lt0.
+          by rewrite ltn_mul2r oE absz_gt0 neq_lt ordf_lt0.
         rewrite mulrC !degree_mul_id ?(mulf_neq0, expf_neq0, ecY_neq0) //.
         by rewrite (uniok_inf_degeq uok).
       + rewrite -!exprnP -!(tofracX, tofracM, tofracD) => nz.
@@ -462,18 +463,18 @@ Section ECDiv.
         set v1 := (_ + _); exists (v1.[x, y] / d.[x, y]) => //.
         rewrite mulf_eq0 invr_eq0 negb_or (uniok_fin_den_eval_neq0 uok) andbT.
         rewrite /v1 !(eceval_add, eceval_mul, eceval_exp) //.
-        rewrite eceval_unifun_fin expr0n oE absz_eq0 eqr_le.
-        rewrite [0 <= _]lerNgt ordf_lt0 andbF mul0r addr0.
+        rewrite eceval_unifun_fin expr0n oE absz_eq0 eq_le.
+        rewrite [0 <= _]leNgt ordf_lt0 andbF mul0r addr0.
         by rewrite (uniok_fin_num_eval_neq0 uok).
     apply/eqP/freeg_eqP=> R; rewrite !coeff_fgnegE !ecdiv_coeffE.
     have [oncve_R|outcve_R] := (boolP (oncurve R)); last first.
       by rewrite !order_outcve.
-    case: (ltrP (order f R) 0); first by move/(h _ c) => <-.
-    move=> ge0_ordfR; have/eval_ge0_orderP [x evalhR] := ge0_ordfR.
+    case/boolP: (order f R < 0); first by move/(h _ c) => <-.
+    rewrite -leNgt => ge0_ordfR; have/eval_ge0_orderP [x evalhR] := ge0_ordfR.
     have: (0 <= order (f + c%:PEF) R).
       apply/eval_ge0_orderP; exists ((evalK R f) + c).
       by rewrite evalDr evalC // /evalK evalhR.
-    by move=> ge0_ordfDcR; rewrite !minr_l.
+    by move=> ge0_ordfDcR; rewrite !min_l.
   Qed.
 
   (* ------------------------------------------------------------------ *)
@@ -604,7 +605,7 @@ Section ECDiv.
     have inD2E p: p \in dom D2 -> p \notin dom D1.
       move=> p_in_D2; move/(_ p): D12_nI; rewrite !inE p_in_D2.
       by rewrite andbT => /= ->.
-    rewrite ecnormE (eq_big_perm _ dom_permeq) /=.
+    rewrite ecnormE (perm_big _ dom_permeq) /=.
     rewrite big_cat /= big_seq_cond [X in _ + X]big_seq_cond.
     rewrite (eq_bigr (fun p => `|coeff p D1| )); last first.
       move=> p /andP [/inD1E p_notin_D2 _]; rewrite coeffD.
@@ -639,20 +640,20 @@ Section ECDiv.
           D = << p >> *~ ((-1) ^+ b) + << n *g ∞ >>.
   Proof.
     move=> nD_eq1; have: forall p, p != ∞ -> `|coeff p D| <= 1.
-      move=> p nz_p; rewrite lerNgt; apply/negP => NDp_gt1.
+      move=> p nz_p; rewrite leNgt; apply/negP => NDp_gt1.
       move: nD_eq1; rewrite ecnormE (big_rem p) /=; last first.
-        by rewrite mem_dom inE -normr_eq0 neqr_lt (ltr_trans ltr01).
-      move/eqP; rewrite nz_p eqr_le => /andP [h _]; move: h.
+        by rewrite mem_dom inE -normr_eq0 neq_lt (lt_trans ltr01).
+      move/eqP; rewrite nz_p eq_le => /andP [h _]; move: h.
       set s := \sum_(_ <- _ | _) _; have: 0 <= s.
         by apply/sumr_ge0=> i _; rewrite normr_ge0.
-      by move/(ltr_le_add NDp_gt1); rewrite addr0 ltrNge=> /negbTE->.
+      by move/(ltr_le_add NDp_gt1); rewrite addr0 ltNge=> /negbTE->.
     move=> NDp_le1; move: nD_eq1; rewrite ecnormE -big_filter.
     rewrite {3}[D]div_sumE -[X in _ + X]big_filter; set s := [seq _ <- _ | _].
     case sE: s => [|p ps]; first by rewrite big_nil.
     have: p \in s by rewrite sE inE eqxx.
     rewrite /s mem_filter=> /andP [nz_p p_in_D].
     rewrite !big_cons; have cpD: `|coeff p D| = 1.
-      apply/eqP; rewrite eqr_le NDp_le1 ?andTb //.
+      apply/eqP; rewrite eq_le NDp_le1 ?andTb //.
       by have := p_in_D; rewrite -gtz0_ge1 normrE mem_dom inE.
     rewrite cpD -{2}[1]addr0 => /addrI=> sum_ps_eq0; exists p=> //.
     exists (coeff p D < 0); exists (coeff ∞ D); rewrite addrC.

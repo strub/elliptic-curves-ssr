@@ -7,15 +7,17 @@
 (* -------------------------------------------------------------------- *)
 From mathcomp Require Import ssreflect ssrnat ssrbool eqtype seq.
 From mathcomp Require Import fintype choice tuple perm zmodp ssrfun.
-From mathcomp Require Import bigop ssralg ssrint ssrnum generic_quotient.
+From mathcomp Require Import bigop ssralg ssrint order ssrnum generic_quotient.
 
 Require Import xseq xmatrix polyall polydec polyfrac.
 Require Import fraction fracfield SsrMultinomials.freeg.
-Require Import ec ecpoly eceval ecorder ecdiv.
+Require Import ec ecpoly eceval ecorder ecdiv eceval.
 
 (* -------------------------------------------------------------------- *)
 Import GRing.Theory.
 Import Num.Theory.
+Import Order.POrderTheory.
+Import Order.TotalTheory.
 Import fraction.FracField.
 Import fracfield.FracField.
 Import FracInterp.
@@ -52,6 +54,7 @@ Section FracECPoly.
   Local Notation PEF := (@tofrac _ \o ((ecX _) \o polyC)).
   Local Notation "x %:PEF" := (PEF x) (at level 2).
 
+  Declare Scope G.
   Delimit Scope G with G.
 
   Local Notation "\- x"   := (@ECGroup.neg _ x)     : G.
@@ -60,7 +63,7 @@ Section FracECPoly.
 
   Local Notation neq0 := (mulf_neq0, invr_eq0, ecX_eq0, tofrac_eq0, conjp_eq0).
 
-  Local Hint Extern 0 (is_true (ec.Xpoly _ != 0)) => exact: XpolyN0.
+  Local Hint Extern 0 (is_true (ec.Xpoly _ != 0)) => exact: XpolyN0 : core.
 
   Definition proportional (p q : ecpoly) :=
     [&& (p.1 %= q.1), (p.2 %= q.2) &
@@ -139,7 +142,7 @@ Section FracECPoly.
      + move/pptnlrP=> [[c1 c2] /= /andP [nz_c1 nz_c2]] eq; exists (c2 / c1).
        * by rewrite mulf_neq0 // invr_eq0.
        * apply/(@mulfI _ (c1%:P)%:E); first by rewrite ecX_eq0 polyC_eq0.
-         rewrite mulrCA mulrA -ecXM -polyC_mul [_ * c1]mulrAC -mulrA.
+         rewrite mulrCA mulrA -ecXM -polyCM [_ * c1]mulrAC -mulrA.
          by rewrite divff // mulr1 eq.
      + case=> c nz_c ->; apply/and3P; rewrite mulE /dotp /= !simpm; split.
        * apply/eqpP; exists (1, c) => /=; first by rewrite oner_eq0.
@@ -263,8 +266,6 @@ Section FracECPoly.
   Qed.
 
   (* -------------------------------------------------------------------- *)
-  Require Import eceval.
-
   Reserved Notation "e .[! x , y ]" (at level 2, format "e .[! x ,  y ]").
 
   Implicit Types p q : {poly K}.
@@ -339,9 +340,9 @@ Section FracECPoly.
       case: (eval e _) => [z|]; first by rewrite !hornerE.
       rewrite /= -(inj_eq (@polyC_inj _)) -size1_polyC //.
       by rewrite (negbTE nz_p).
-    move/IH=> {IH} IH; rewrite evalM; last first.
+    move/IH=> {}IH; rewrite evalM; last first.
       rewrite -sgzM sgz_ge0; case: (ltrP (order e g) 0).
-      + move=> lt_oe_0; rewrite nmulr_lge0 // ltrW //.
+      + move=> lt_oe_0; rewrite nmulr_lge0 // ltW //.
         rewrite eval_lt0_order IH; move: lt_oe_0.
         by rewrite eval_lt0_order => /eqP ->.
       + move=> ge_oe_0; rewrite mulr_ge0 //.
@@ -358,7 +359,7 @@ Section FracECPoly.
     forall (g : point K), oncurve g -> (g \in fzeros e) = (eval e g == 0%:PP).
   Proof.
     move=> nz_e g oncve; rewrite /fzeros mem_dom inE /= coeff_fgposE.
-    by rewrite eqr_maxl -ltrNge ecdiv_coeffE eval_gt0_order.
+    by rewrite eq_maxl -ltNge ecdiv_coeffE eval_gt0_order.
   Qed.
 
   Lemma comp_poly_fec_eq0 p e:
@@ -429,7 +430,7 @@ Section FracECPoly.
 
     move=> b_in_G; have: root q z.
       rewrite rootE /q horner_prod.
-      rewrite (eq_big_perm _ (perm_to_rem b_in_G)) /=.
+      rewrite (perm_big _ (perm_to_rem b_in_G)) /=.
       by rewrite big_cons /b /= !hornerE subrr mul0r.
 
     move=> z_root_q; move: z_root_qS; rewrite rootE.
@@ -571,7 +572,7 @@ Section FracECPoly.
       rewrite {1 2}/f; rewrite {1}conjE conjp_ecX /ecX -mulrDl.
       rewrite -tofracD -[n]ecpolyE /conjp addE /= subrr -mulr2n.
       rewrite -mulr_natl -!/(ecX _ _) ecXM tofracM -mulrA.
-      rewrite /GRing.one /= -polyC_muln evalM_finL ?orderC //.
+      rewrite /GRing.one /= -polyCMn evalM_finL ?orderC //.
       rewrite evalC // evalDl; last first.
         by case/(eval_ge0_orderP): (ord_f p)=> c ->.
       rewrite /f conjE conjp_ecX;
@@ -589,7 +590,7 @@ Section FracECPoly.
         by case/(eval_ge0_orderP): (ord_f p)=> c1 ->.
       rewrite evalN; case/(eval_ge0_orderP): (order_n2 p)=> c ->.
       case/(eval_ge0_orderP): (ord_f p)=> cf -> /=.
-      move: (cf - c) => {cf c} c /esym eval_n1d.
+      move: (cf - c) => {cf}c /esym eval_n1d.
       by rewrite -eval_ge0_order eval_n1d.
     have: forall p : point K, 0 <= order ((n.1)%:E // d%:E) p.
       move=> p; have [->|nz_n1] := (eqVneq n.1 0).
@@ -599,7 +600,7 @@ Section FracECPoly.
       move/(congr1 (fun x => x \* x)); rewrite -evalM; last first.
         by rewrite -sgzM -expr2 sgzX sqr_ge0.
       rewrite mulf_cross -!expr2 exprVn -tofracX ecY_sqr /=.
-      move: (c * c) => {c} c /eval_fin_order_ge0.
+      move: (c * c) => {}c /eval_fin_order_ge0.
       rewrite ecXM tofracM mulrAC ecXX tofracX -divf_exp.
       rewrite [X in 0 <= X -> _]order_mul ?(neq0, XpolyN0) // order_exp.
       case: p oncve => [|x y] oncve /=.
@@ -613,13 +614,12 @@ Section FracECPoly.
         by rewrite addr0 pmulrn_lge0.
       rewrite -Xpoly_oncurve => oncve; move: (order_Xpoly_le2 E (|x, 0|)) => h.
       rewrite addrC -[X in _ + X]opprK subr_ge0 => h'.
-      move: {h h'} (ler_trans h' h).
-      rewrite -mulNrn -natz ler_muln2r /= ler_eqVlt; case/orP.
+      move: {h h'} (le_trans h' h).
+      rewrite -mulNrn -natz ler_muln2r /= le_eqVlt; case/orP.
       + rewrite eqr_oppLR => /eqP orderE; move: (even_orderS n.1 d oncve).
         by rewrite orderE abszN absz1.
       + by case: (order _ _).
-    move=> {order_n1} order_n1.
-
+    move=> {}order_n1.
 
     (*to use and not ord_f*)
     have ord_F: forall (p : point _), 0 = order (n // d%:E) p.
@@ -710,7 +710,7 @@ Section FracECPoly.
     have h (g : {fraction ecpoly}):
          fgpos (ecdiv g) != fgneg (ecdiv g)
       -> exists2 P, oncurve P & eval g P = 0%:PP.
-      move=> {neq hdeg} neq; set P := nth ∞ (dom (fgpos (ecdiv g))) 0.
+      move=> {hdeg}neq; set P := nth ∞ (dom (fgpos (ecdiv g))) 0.
       have hdeg: deg (fgpos (ecdiv g)) = deg (fgneg (ecdiv g)).
         by apply/eqP; rewrite -subr_eq0 -degB -fg_decomp deg_ecdiv_eq0.
       have P_in: P \in dom (fgpos (ecdiv g)).

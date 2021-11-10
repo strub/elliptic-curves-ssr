@@ -26,7 +26,7 @@ Unset Strict Implicit.
 Local Notation simp := Monoid.simpm.
 Local Notation sizep := (size : {poly _} -> _).
 
-Local Hint Extern 0 (is_true (Xpoly _ != 0)) => exact: XpolyN0.
+Local Hint Extern 0 (is_true (Xpoly _ != 0)) => exact: XpolyN0 : core.
 
 (* -------------------------------------------------------------------- *)
 Reserved Notation "[ 'ecp' a *Y + b ]"
@@ -717,8 +717,8 @@ Section ECPolySubTheory.
     degree p = (maxn (2 * size p.2).-1 ((2 * (size p.1).+1) * (p.1 != 0))).
   Proof.
     case: p => [[p1 p2]] /=; have [->|nz_p1] := eqVneq p1 0.
-      by rewrite eqxx muln0 maxn0 degree_pX.
-    rewrite nz_p1 muln1; have [->|nz_p2] := eqVneq p2 0.
+      by rewrite muln0 maxn0 degree_pX.
+    rewrite muln1; have [->|nz_p2] := eqVneq p2 0.
       by rewrite degree_pY // size_poly0 muln0 max0n.
     rewrite /degree /normp /dotp /= size_add_max; last first.
       rewrite mulrN mulNr size_opp !size_mul ?mulf_neq0 ?XpolyN0 //.
@@ -758,18 +758,18 @@ Section ECPolySubTheory.
       move/predn_neq; rewrite (inj_eq double_inj)=> ne_sz_pq2.
       by rewrite -size_add_max.
     have [z_q1|nz_q1] := eqVneq q.1 0.
-      rewrite z_q1 addr0 nz_p1 !eqxx !(muln1, muln0) !maxn0.
+      rewrite z_q1 addr0 nz_p1 !(muln1, muln0) !maxn0.
       rewrite maxnAC maxn_pred !mul2n -map_maxn; last exact: leq_double.
       case: (size p.2 =P size q.2); last first.
         by move=> /eqP ne_sz_pq2 _; rewrite -size_add_max.
       move=> eq_sz_pq2; rewrite eq_sz_pq2 maxnn {1}/maxn.
-      case: ltnP; last (by rewrite eqxx); rewrite {2}/maxn=> lt.
-      move=> ne; rewrite lt; apply/maxn_idPr; rewrite (leq_trans _ lt) //.
+      case: ltnP; last (by rewrite eqxx); move=> lt.
+      move=> ne; apply/maxn_idPr; rewrite (leq_trans _ lt) //.
       have ltn_pred n m: n <= m -> n.-1 <= m.-1.
         by case: n m => [|n] [|m].
       apply: ltnW; rewrite ltnS ltn_pred // leq_double.
       by rewrite (leq_trans (size_add _ _)) // eq_sz_pq2 maxnn.
-    rewrite nz_p1 nz_q1 !muln1; move: leq_piq; rewrite leq_eqVlt; case/orP.
+    rewrite !muln1; move: leq_piq; rewrite leq_eqVlt; case/orP.
       move/eqP=> eq_sz_pq1; rewrite eq_sz_pq1 2![maxn _.-1 _]maxnC.
       rewrite !mul2n => ne; have/eqP/(_ (congr1 _ _)) := ne => /eqP.
       have predn_neq n m: n.-1 != m.-1 -> n != m.
@@ -826,12 +826,12 @@ Section ECPolySubTheory.
       rewrite maxn_pred !mul2n -map_maxn; last exact: leq_double.
       by apply: leq_predn; rewrite leq_double size_add.
     have [z_q1|nz_q1] := eqVneq q.1 0.
-      rewrite z_q1 addr0 nz_p1 !eqxx !(muln1, muln0) !maxn0.
+      rewrite z_q1 addr0 nz_p1 !(muln1, muln0) !maxn0.
       rewrite maxnAC maxn_pred !mul2n -map_maxn; last exact: leq_double.
       rewrite geq_max [X in _&&X]leq_max leqnn orbT andbT.
       rewrite leq_max; apply/orP; left; apply/leq_predn.
       by rewrite leq_double size_add.
-    rewrite nz_p1 nz_q1 !muln1; set n := maxn _ _.
+    rewrite !muln1; set n := maxn _ _.
     have: n <= maxn (2 * size (p.2 + q.2)).-1 (2 * (size (p.1 + q.1)).+1).
       rewrite {}/n; case: (_ =P 0); rewrite !(muln0, muln1) //.
       by rewrite maxn0 leq_maxl.
@@ -933,8 +933,8 @@ Section ECPolySubTheory.
   Lemma fdegreeF (f : {ecpoly E}): fdegree f%:F = (degree f).-1.
   Proof.
     rewrite !piE /fdegree_r !numden_Ratio ?oner_neq0 //.
-    have [->|nz_f] := eqVneq f 0; first by rewrite eqxx degree0.
-    rewrite (negbTE nz_f) degreeC ?oner_eq0 // predn_int //.
+    have [->|nz_f] := eqVneq f 0; first by rewrite degree0.
+    rewrite degreeC ?oner_eq0 // predn_int //.
     by rewrite lt0n degree_eq0.
   Qed.
 

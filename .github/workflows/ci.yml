@@ -1,0 +1,75 @@
+name: Docker CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        image:
+          - mathcomp/mathcomp:1.12.0-coq-8.14 # (without coq-native for now)
+          - mathcomp/mathcomp:1.13.0-coq-8.14 # (without coq-native for now)
+          - mathcomp/mathcomp:1.13.0-coq-dev # (without coq-native for now)
+          - mathcomp/mathcomp-dev:coq-8.14 # (without coq-native for now)
+          - mathcomp/mathcomp-dev:coq-dev # (without coq-native for now)
+          # the previous comments refer to https://github.com/coq/ceps/pull/48
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v2
+      - uses: coq-community/docker-coq-action@v1
+        env:
+          LIBRARY_NAME: 'EllipticCurves'
+          ROOT_THEORIES: 'ec'
+        with:
+          opam_file: 'coq-mathcomp-elliptic-curves.opam'
+          custom_image: ${{ matrix.image }}
+          export: 'LIBRARY_NAME ROOT_THEORIES'
+          # Note: these native-compiler tests are generic,
+          # thanks to env variables & the configure script
+          after_script: |
+            startGroup "Print native_compiler status"
+              coqc -config
+              coq_version() {
+                coqc --version | grep version | \
+                  sed -e 's/^.*version \([-0-9a-z.+~]\+\)\( .*\)\?$/\1/'
+              }
+              le_version() {
+                [ "$(printf '%s\n' "$1" "$2" | sort -V -u | tail -n1)" = "$2" ]
+              }
+              coq_native_compiler_default() {
+                coqc -config | grep -q 'COQ_NATIVE_COMPILER_DEFAULT=yes'
+              }
+              coqv=$(coq_version)
+              coq_native_compiler_default && echo native-compiler
+              coq_native=$(opam var coq-native:installed)
+            endGroup
+            if [ "$coq_native" = "true" ] && le_version "8.12.1" "$coqv"; then
+              startGroup "Workaround permission issue"
+                sudo chown -R coq:coq .  # <--(§)
+              endGroup
+              startGroup "Check native_compiler on a test file"
+                printf '%s\n' "From $LIBRARY_NAME Require Import $ROOT_THEORIES." > test.v
+                if le_version "8.14" "$coqv"; then
+                  debug=(-d native-compiler)
+                else
+                  debug=(-debug)
+                fi
+                coqc "${debug[@]}" -native-compiler yes test.v > stdout.txt || ret=$?
+                cat stdout.txt
+                ( exit "${ret:-0}" )
+              endGroup
+              # in practice, we get ret=0 even if deps were not native-compiled
+              # but the logs are useful...(*), so we keep this first test group
+              # and add another test group which is less verbose, but stricter.
+              startGroup "Check installation of .coq-native/ files"
+                set -o pipefail
+                # fail noisily if ever 'find' gives 'No such file or directory'
+                num=$(find "$(coqc -where)/user-contrib/$LIBRARY_NAME" -type d -name ".coq-native" | wc -l)
+                [ "$num" -gt 0 ]
+              endGroup
+            fi
+      - name: Revert permissions
+        # to avoid a warning at cleanup time
+        if: ${{ always() }}
+        run: sudo chown -R 1001:116 .  # <--(§)

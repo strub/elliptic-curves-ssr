@@ -37,7 +37,7 @@ Section ECGroup.
 
   Import PreClosedField.
 
-  Hint Resolve closedK.
+  Hint Resolve closedK : core.
 
   Local Notation "\- x"   := (@ECGroup.neg _ x).
   Local Notation "x \+ y" := (@ECGroup.add _ E x y).

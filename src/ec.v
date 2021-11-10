@@ -514,7 +514,7 @@ Section EC.
   Lemma oncurve_ec: forall p : ec, oncurve p.
   Proof. exact: valP. Qed.
 
-  Hint Resolve oncurve_ec.
+  Hint Resolve oncurve_ec : core.
 End EC.
 
 Notation "[ 'oc' 'of' p ]" := (oncurve_ec p).
@@ -727,7 +727,7 @@ Module ECGroup.
         rewrite !addf_div ?(oner_neq0, subr_eq0, ne_x1x2) // !simp.
         by congr (_ / _); rewrite !opprB !(mulrDl, mulrDr); ssring.
       rewrite ![y2==_]eq_sym; case: (y1 =P y2) => [<-|/eqP ne_y1y2] => //=.
-      by rewrite [0==y1]eq_sym; have [->|->] := (eqVneq y1 0); rewrite ?eqxx.
+      by rewrite [0==y1]eq_sym; have [->|] := (eqVneq y1 0); rewrite ?eqxx.
     Qed.
 
     Lemma line_okl p q:
@@ -746,8 +746,8 @@ Module ECGroup.
         rewrite mulf_eq0 invr_eq0 orbC subr_eq0 eq_sym (negbTE ne_x1x2) /=.
         by apply/eqP; ssring.
       case: (y1 =P y2) => [<-|/eqP ne_y1y2] /=; last by rewrite !simp subrr.
-      have [->|nz_y1] := eqVneq y1 0; first by rewrite eqxx /= !simp subrr.
-      by rewrite nz_y1 !simp; ssring.
+      have [->|nz_y1] := eqVneq y1 0; first by rewrite /= !simp subrr.
+      by ssring.
     Qed.
 
     Lemma line_okr p q:
@@ -850,7 +850,7 @@ Module ECGroup.
       move=> Ec2; have: k = - (c2 + p.1 + q.1) by rewrite Ec2; ssring.
       move=> Ek; move: Er'; rewrite Ek=> ->.
       rewrite !mulrA [X in _ = X]mulrC !mulrA; congr (_ * _ * _).
-      by rewrite -!polyC_opp opprK /c2; congr ('X + _%:P); ssring.
+      by rewrite -!polyCN opprK /c2; congr ('X + _%:P); ssring.
     Qed.
 
     Lemma negK: involutive neg.

@@ -1,0 +1,28 @@
+opam-version: "2.0"
+maintainer: "pierre-yves@strub.nu"
+homepage: "https://github.com/strub/elliptic-curves-ssr"
+bug-reports: "https://github.com/strub/elliptic-curves-ssr/issues"
+dev-repo: "git+https://github.com/strub/elliptic-curves-ssr.git"
+license: "CeCILL-B"
+authors: ["Pierre-Yves Strub"]
+build: [
+  [ "bash" "./configure"
+    "--native-compiler" {coq-native:installed & coq:version >= "8.12.1" & coq:version < "8.13~" }
+    "yes" {coq-native:installed & coq:version >= "8.12.1" & coq:version < "8.13~" } ]
+  [ "dune" "build" "-p" name "-j" jobs ]
+]
+depends: [
+  "coq"                       {(>= "8.14" & < "8.15~") | = "dev"}
+  "dune"                      {>= "2.5"}
+  "coq-mathcomp-ssreflect"    {(>= "1.12" & < "1.14~") | = "dev"}
+  "coq-mathcomp-algebra"
+  "coq-mathcomp-field"
+  "coq-mathcomp-multinomials" {(>= "1.5" & < "1.6~") | = "dev" }
+  "coq-mathcomp-bigenough"    {(>= "1.0" & < "1.1~") | = "dev"}
+  "coq-mathcomp-finmap"       {(>= "1.5" & < "1.6~") | = "dev"}
+]
+tags: [
+  "keyword:elliptic curves"
+  "logpath:EllipticCurves"
+]
+synopsis: "An Elliptic Curve Library for the Mathematical Components Library"

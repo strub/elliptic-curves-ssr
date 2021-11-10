@@ -7,13 +7,15 @@
 (* -------------------------------------------------------------------- *)
 From mathcomp Require Import ssreflect ssrnat ssrbool eqtype choice seq.
 From mathcomp Require Import fintype ssralg ssrfun ssrint ssrnum bigop.
-From mathcomp Require Import generic_quotient.
+From mathcomp Require Import order generic_quotient.
 
 Require Import xseq fraction fracfield polyall.
 Require Import ssrring polyfrac polydec ec ecpoly.
 
 Import GRing.Theory.
 Import Num.Theory.
+Import Order.POrderTheory.
+Import Order.TotalTheory.
 Import fraction.FracField.
 Import fracfield.FracField.
 Import FracInterp.
@@ -28,7 +30,7 @@ Unset Printing Implicit Defensive.
 Local Notation simp := Monoid.simpm.
 Local Notation sizep := (size : {poly _} -> _).
 
-Local Hint Extern 0 (is_true (Xpoly _ != 0)) => exact: XpolyN0.
+Local Hint Extern 0 (is_true (Xpoly _ != 0)) => exact: XpolyN0 : core.
 
 (* -------------------------------------------------------------------- *)
 Section Order.
@@ -408,7 +410,7 @@ Section Order.
       case z_ec: (_ == 0); last by rewrite eceval1 oner_neq0.
       move: (eqP z_ec); rewrite /conjp /eceval /= !hornerE => <-.
       case: (leqP (\mu_x p) (\mu_x q)) => mucmp.
-      + rewrite (minn_idPl _) //; apply/negP=> /eqP /addIr /(mulIf nz_y) /esym.
+      + apply/negP=> /eqP /addIr /(mulIf nz_y) /esym.
         by move/ecu_eq_oppr=> /eqP; rewrite -rootE (negbTE (rootN_div_mu _ _)).
       + absurd false=> //; move: z_ec; rewrite (minn_idPr _); last by apply: ltnW.
         have mucmpW := (ltnW mucmp); set p' := (p %/ _).
@@ -470,19 +472,19 @@ Section Order.
         by rewrite tofrac_eq0 ecX_eq0 expf_neq0 // Xpoly_divp_factor_neq0.
     + rewrite poly_orderfin_regE // /poly_ordreg /= /mudiv_join /=.
       have [z_p|nz_p] := eqVneq p 0.
-      * rewrite z_p eqxx /= div0p ecX_eceval mu0 max0n.
+      * rewrite z_p /= div0p ecX_eceval mu0 max0n.
         rewrite -rootE (negbTE (rootN_div_mu _ _)).
         - rewrite mulrC -tofracX divr1 -tofracM.
           by rewrite unifun_fin_regE // -ecXX -ecXM mu_divp_mul.
         - by move: nz_pq; rewrite ec_neq0 /= z_p eqxx.
       have [z_q|nz_q] := eqVneq q 0.
-      * rewrite z_q eqxx orbT /= div0p ecY_eceval mu0 maxn0 mulf_eq0.
+      * rewrite z_q orbT /= div0p ecY_eceval mu0 maxn0 mulf_eq0.
         rewrite (negbTE nz_y) /= -rootE (negbTE (rootN_div_mu _ _)).
         - rewrite mulrC -tofracX divr1 -tofracM.
           rewrite unifun_fin_regE // -ecXX mulE /dotp /=.
           by rewrite !simp mu_divp_mul.
         - by move: nz_pq; rewrite ec_neq0 /= z_q eqxx.
-      rewrite (negbTE nz_p) (negbTE nz_q) /=; case z_eval : (_ == 0).
+      case z_eval : (_ == 0).
       * rewrite unifun_fin_regE // /= exprD -!tofracX -!ecXX.
         rewrite -mulrA [X in _ = _ * X]mulrA -tofracM.
         rewrite -ecXM [X in (X%:E // (conjp _))]mulrC mu_divp_mul.
@@ -689,7 +691,7 @@ Section Order.
   Proof.
     move=> nz_u oncve H1; have H2: uniok u (-1) p 0 (-1) 1.
     + move: (@uniokC _ (-1) p nz_u); rewrite oppr_eq0 oner_neq0.
-      by rewrite !(polyC_opp, ecXN, tofracN); apply.
+      by rewrite !(polyCN, ecXN, tofracN); apply.
     by move: (uniok_mul nz_u oncve H1 H2); rewrite !mulrN !mulr1 addr0.
   Qed.
 
@@ -747,7 +749,7 @@ Section Order.
   Proof.
     move=> p ecp nz_p cve o1 o2; wlog cmp_o: o1 o2 / (o2 <= o1).
     + move=> Hsym; case: (lerP o2 o1); first by move=> *; apply Hsym.
-      move=> /ltrW cmp n1 n2 d1 d2 Hu1 Hu2.
+      move=> /ltW cmp n1 n2 d1 d2 Hu1 Hu2.
       by rewrite [o1 == _]eq_sym [n1 // _ == _]eq_sym; apply Hsym.
     move=> n1 n2 d1 d2 H1 H2.
     have nz_n1 := uniok_nz_num H1; have nz_n2 := uniok_nz_num H2.
@@ -762,7 +764,7 @@ Section Order.
     rewrite -[o1]add0r -[0](subrr o2) -addrA expfzDr // -mulrA.
     move/(mulfI (expfz_neq0 o2 nz_u)); rewrite addrC.
     move: cmp_o; rewrite -subr_ge0; case En: (o1 - o2)=> [n|//].
-    rewrite ler_eqVlt; case/orP => [/eqP <-|].
+    rewrite le_eqVlt; case/orP => [/eqP <-|].
     + by rewrite expr0z mul1r addr0 => ->; rewrite !eqxx.
     move=> ge0_n; rewrite -exprnP divf_exp -!tofracX=> /eqP.
     rewrite mulf_cross -invfM -!tofracM [_ // d2 == _]frac_eq; last first.
@@ -1057,7 +1059,7 @@ Section Order.
     have [->|nz_f] := eqVneq f 0.
     + by rewrite oppr0 order0.
     rewrite -mulN1r order_mul.
-    + by rewrite -tofracN -ecXN -polyC_opp orderC ?simp.
+    + by rewrite -tofracN -ecXN -polyCN orderC ?simp.
     + by rewrite ?(mulf_neq0, oppr_eq0, oner_neq0).
   Qed.
 
@@ -1191,7 +1193,7 @@ Section Order.
     by rewrite tofracN invrN mulrN.
   Qed.
 
-  Local Hint Extern 0 (is_true (unifun _ != 0)) => exact: unifun_neq0.
+  Local Hint Extern 0 (is_true (unifun _ != 0)) => exact: unifun_neq0 : core.
 
   Lemma unifun_conj ecp:
     oncurve ecp -> uniformizer (conj (unifun ecp)) ecp.
@@ -1397,12 +1399,12 @@ Section Order.
     have pf1_nz: p // 1 != 0 by rewrite divr1 tofrac_eq0.
     have ->: p%:F = p // 1 by rewrite divr1.
     move => Ho; rewrite Ho; case: (posnP n).
-    + move/(congr1 Posz); rewrite -Ho => {n Ho} Ho.
+    + move/(congr1 Posz); rewrite -Ho => {n}Ho.
       rewrite Ho eqxx (order0_num_eval_neq0 (p := 1)) //.
       by rewrite eceval1 oner_neq0.
-    + rewrite -ltz_nat -Ho => {Ho} Ho.
+    + rewrite -ltz_nat -Ho => {}Ho.
       rewrite (order_ge0_num_eval_eq0 (p := 1)) //.
-      by move/gtr_eqF: Ho => ->; rewrite eqxx.
+      by move/gt_eqF: Ho => ->; rewrite eqxx.
   Qed.
 
   Lemma order_ge0_den: forall f x y,
@@ -1457,7 +1459,7 @@ Section Order.
     + move=> Ho n' d' Heq; move: Ho; rewrite Heq.
       by move/order_lt0_den_eval_eq0; rewrite -Heq=> ->.
     + move=> H; case Ho: (order _ _)=> [o|o] //.
-      rewrite ltrNge; apply/negP; rewrite -Ho.
+      rewrite ltNge; apply/negP; rewrite -Ho.
       move/order_ge0_den => /(_ nz_nd oncve) [n' [d']].
       by case=> Heq; rewrite (H _ _ Heq) eqxx.
   Qed.
@@ -1476,8 +1478,8 @@ Section Order.
       by rewrite -rootE rootN_div_mu.
     rewrite add0r order_exp; move: oncve; have [->|nz_y] := (eqVneq y 0).
     + rewrite /= expr0n eq_sym /= -horner_Xpoly -rootE => root_Xc.
-      by rewrite orderS // eqxx /= PoszM pmulrn -mulrzl intz.
-    + by move=> oncve; rewrite orderR // (negbTE nz_y) muln1 natz.
+      by rewrite orderS //= PoszM pmulrn -mulrzl intz.
+    + by move=> oncve; rewrite orderR // muln1 natz.
   Qed.
 
   Lemma order_Xpoly_le2 p: order (Xpoly%:E)%:F p <= 2.
@@ -1513,7 +1515,7 @@ Section Order.
     rewrite !add0r !order_exp orderS // !pmulrn -mulrzBr.
     move: (_ - _) => z; have ->: `|2%:Z *~ z|%N = `|z|.*2.
       have: injective Posz by move=> ?? [->].
-      apply; rewrite abszE normrMz -abszE absz_nat -mul2n.
+      apply; rewrite abszE normrMz -!abszE absz_nat -mul2n.
       by rewrite PoszM -pmulrn -mulr_natl mulrC abszE natz.
     by rewrite odd_double.
   Qed.
@@ -1525,9 +1527,9 @@ Section Order.
     -> order (f + g) ecp = Num.min (order f ecp) (order g ecp).
   Proof.
     wlog: f g / order f ecp < order g ecp.
-      move=> wlog nz_fg ne; have := ne; rewrite neqr_lt; case/orP.
+      move=> wlog nz_fg ne; have := ne; rewrite neq_lt; case/orP.
         by move/wlog; apply.
-      rewrite addrC minrC => /wlog -> //; rewrite 1?mulrC //.
+      rewrite addrC minC => /wlog -> //; rewrite 1?mulrC //.
       by rewrite eq_sym (negbTE ne).
     move=> lt nz_fg ne; have [oncve|oucve] := boolP (oncurve ecp); last first.
       by rewrite !order_outcve.
@@ -1541,7 +1543,7 @@ Section Order.
     have nz_ng: ng != 0 by rewrite decomp_nz_num.
     have nz_df: df != 0 by rewrite decomp_nz_den.
     have nz_dg: dg != 0 by rewrite decomp_nz_den.
-    rewrite minr_l 1?ltrW //; pose u := unifun ecp.
+    rewrite min_l 1?ltW //; pose u := unifun ecp.
     pose fd := order f ecp; pose gd := order g ecp.
     have [/eqP|nz_fDg] := eqVneq (f + g) 0; last move: (erefl (f + g)).
       rewrite addr_eq0 => /eqP /(congr1 (order^~ ecp)) /eqP.
@@ -1611,13 +1613,14 @@ Section Order.
     -> order (f + g) ecp >= Num.min (order f ecp) (order g ecp).
   Proof.
     wlog: f g / order f ecp <= order g ecp.
-      move=> wlog nz_fg nz_fDg; case: (lerP (order f ecp) (order g ecp)).
+      move=> wlog nz_fg nz_fDg.
+      case/boolP: (order f ecp <= order g ecp).
         by move/wlog; apply.
-      move/ltrW; rewrite addrC minrC => /wlog -> //.
+      rewrite -ltNge => /ltW; rewrite addrC minC => /wlog -> //.
         * by rewrite mulrC. * by rewrite addrC.
-    move=> le nz_fg nz_fDg; move: le; rewrite ler_eqVlt; case/orP; last first.
-      by rewrite ltr_neqAle; case/andP => /(order_add nz_fg) -> _.
-    move/eqP=> eq; rewrite -eq minrr.
+    move=> le nz_fg nz_fDg; move: le; rewrite le_eqVlt; case/orP; last first.
+      by rewrite lt_neqAle; case/andP => /(order_add nz_fg) -> _.
+    move/eqP=> eq; rewrite -eq minxx.
     have [oncve|outcve] := boolP (oncurve ecp); last first.
       by rewrite !order_outcve.
     move: nz_fg; rewrite mulf_eq0; case/norP=> nz_f nz_g.
@@ -1696,7 +1699,7 @@ Section ECPolyRoots.
   Lemma ecroots_uniq f: uniq (ecroots f).
   Proof. by apply: undup_uniq. Qed.
 
-  Local Hint Extern 0 (is_true (uniq (ecroots _))) => exact: ecroots_uniq.
+  Local Hint Extern 0 (is_true (uniq (ecroots _))) => exact: ecroots_uniq : core.
 
   Lemma ecrootsP f x y:
     reflect
@@ -1801,7 +1804,7 @@ Section ECPolyRoots.
     set ng := fun (p : K * K) => (p.1, -p.2); have Hing: injective ng.
     + case=> [x1 y1] [x2 y2] /= [<- /eqP].
       by rewrite eqr_opp; move/eqP=> ->.
-    apply: uniq_perm_eq; rewrite ?map_inj_uniq //.
+    apply: uniq_perm; rewrite ?map_inj_uniq //.
     case=> [x y];rewrite -{2}[y]opprK -/(ng (x, -y)).
     by rewrite mem_map // mem_ecroots_conjp.
   Qed.
@@ -1809,7 +1812,7 @@ Section ECPolyRoots.
   Lemma ecrootsM f g:
     f * g != 0 -> perm_eq (ecroots (f * g)) (undup ((ecroots f) ++ (ecroots g))).
   Proof.
-    move=> nz_fg; apply: uniq_perm_eq=> //.
+    move=> nz_fg; apply: uniq_perm=> //.
     + by rewrite undup_uniq.
     by case=> [x y]; rewrite mem_ecrootsM // mem_undup mem_cat.
   Qed.
@@ -1819,7 +1822,7 @@ Section ECPolyRoots.
   Proof.
     have [->|nz_p] := eqVneq p 0.
     + by rewrite mulr0 ecroots0.
-    apply: (perm_eq_trans (ecrootsM _)); rewrite ?mulf_neq0 //.
+    apply: (perm_trans (ecrootsM _)); rewrite ?mulf_neq0 //.
     by rewrite undup_double undup_id.
   Qed.
 End ECPolyRoots.

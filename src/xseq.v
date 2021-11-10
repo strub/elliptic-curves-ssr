@@ -42,14 +42,14 @@ Qed.
 Lemma perm_eq_map (T U : eqType) (f : T -> U) (xs ys : seq T):
   perm_eq xs ys -> (perm_eq (map f xs) (map f ys)).
 Proof.
-  by move/perm_eqP => H; apply/perm_eqP=> p; rewrite !count_map.
+  by move/permP => H; apply/permP=> p; rewrite !count_map.
 Qed.
 
 Lemma perm_eq_undup (T : eqType) (xs ys : seq T):
   perm_eq xs ys -> perm_eq (undup xs) (undup ys).
 Proof.
-  move=> H; apply: uniq_perm_eq; rewrite ?undup_uniq //.
-  by move=> x; rewrite !mem_undup; apply: perm_eq_mem.
+  move=> H; apply: uniq_perm; rewrite ?undup_uniq //.
+  by move=> x; rewrite !mem_undup; apply: perm_mem.
 Qed.
 
 Lemma uniq_map (T U : eqType) (f : T -> U) (xs : seq T):
@@ -62,7 +62,7 @@ Qed.
 Lemma perm_cat (T : eqType) (xs1 xs2 ys1 ys2 : seq T):
   perm_eq xs1 ys1 -> perm_eq xs2 ys2 -> perm_eq (xs1 ++ xs2) (ys1 ++ ys2).
 Proof.
-  move=> /perm_eqP H1 /perm_eqP H2; apply/perm_eqP => p.
+  move=> /permP H1 /permP H2; apply/permP => p.
   by rewrite !count_cat H1 H2.
 Qed.
 
@@ -71,13 +71,14 @@ Lemma mem_flattenP (T : eqType) (xss : seq (seq T)) (x : T):
     (exists2 xs : seq T, xs \in xss & x \in xs)
     (x \in flatten xss).
 Proof.
-  apply: (iffP idP); elim: xss => [|xs xss IH] //=; try by case.
+  apply: (iffP idP); elim: xss => [|xs xss IH] //=.
   + rewrite mem_cat; case/orP.
     * by move=> x_in_xs; exists xs => //; rewrite inE eqxx.
     * case/IH=> ys ys_in_xss x_in_ys; exists ys => //.
       by rewrite inE ys_in_xss orbT.
+  + by case.
   + case=> ys; rewrite inE; case/orP.
-    * by case/eqP=> -> {ys}; rewrite mem_cat=> ->.
+    * by move/eqP=> -> {ys}; rewrite mem_cat=> ->.
     * move=> ys_in_xss x_in_ys; rewrite mem_cat IH ?orbT //.
       by exists ys.
 Qed.
@@ -136,6 +137,6 @@ Qed.
 Lemma perm_eq_filter (T : eqType) (p : pred T) (xs ys : seq T):
   perm_eq xs ys -> perm_eq (filter p xs) (filter p ys).
 Proof.
-  move=> /perm_eqP peq; apply/perm_eqP=> pc.
+  move=> /permP peq; apply/permP=> pc.
   by rewrite !count_filter peq.
 Qed.
